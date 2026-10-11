@@ -1,0 +1,86 @@
+# 示范配置，不是你的本机配置。身份和 desktop ID 需以本机捕获结果为准。
+# 安装器不会将本示例覆盖到 ~/.config/omarchy-workspaces/apps.toml。
+[defaults]
+launch_timeout = 20
+existing_window = "focus"
+backend = "auto"
+
+[aliases]
+
+[apps.chatgpt_app]
+name = "ChatGPT App"
+workspace = 1
+desktop = "chatgpt.desktop"
+matches = [{initial_class = "chatgpt"}]
+
+[apps.grok_bot]
+name = "Grok Bot"
+workspace = 1
+desktop = "grok-bot.desktop"
+matches = [{initial_class = "GrokBot"}]
+
+[apps.chatgpt_web]
+name = "ChatGPT 网页"
+workspace = 1
+command = ["omarchy-launch-webapp", "https://chatgpt.com"]
+matches = [{initial_class = "chrome-chatgpt.com__-Default"}]
+shortcuts = ["CTRL + SHIFT + A"]
+replace_shortcuts = true
+
+[apps.terminal]
+name = "终端"
+workspace = 2
+desktop = "Alacritty.desktop"
+matches = [{initial_class = "Alacritty"}]
+shortcuts = ["SUPER + Return"]
+replace_shortcuts = true
+
+[apps.tmux]
+name = "Tmux"
+workspace = 2
+command = ["omarchy-launch-tui", "--app-id=org.omarchy-workspaces.tmux", "tmux", "new-session", "-A", "-s", "Work"]
+matches = [{initial_class = "org.omarchy-workspaces.tmux"}]
+shortcuts = ["SUPER + ALT + Return"]
+replace_shortcuts = true
+
+[apps.vscode]
+name = "VS Code"
+workspace = 2
+desktop = "code.desktop"
+matches = [{initial_class = "Code"}]
+shortcuts = ["SUPER + SHIFT + N"]
+replace_shortcuts = true
+
+[apps.browser]
+name = "浏览器"
+workspace = 3
+desktop = "google-chrome.desktop"
+matches = [{initial_class = "google-chrome"}]
+shortcuts = ["SUPER + SHIFT + Return", "SUPER + SHIFT + B"]
+replace_shortcuts = true
+
+[apps.wechat]
+name = "WeChat"
+workspace = 4
+desktop = "wechat.desktop"
+matches = [{initial_class = "WeChat"}]
+
+[apps.slack]
+name = "Slack"
+workspace = 4
+desktop = "slack.desktop"
+matches = [{initial_class = "Slack"}]
+
+[apps.x]
+name = "X"
+workspace = 4
+desktop = "x.desktop"
+matches = [{initial_class = "chrome-x.com__-Default"}]
+shortcuts = ["SUPER + SHIFT + X"]
+replace_shortcuts = true
+
+[apps.discord]
+name = "Discord"
+workspace = 4
+desktop = "discord.desktop"
+matches = [{initial_class = "discord"}]

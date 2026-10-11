@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "lambert.workspaces",
+  "name": "Omarchy Workspaces",
+  "version": "1.2.0",
+  "description": "配置应用的默认工作区，复用已有窗口，并安全管理快捷键与启动器。",
+  "kinds": ["panel"],
+  "entryPoints": {
+    "panel": "Panel.qml"
+  },
+  "keepLoaded": true
+}
