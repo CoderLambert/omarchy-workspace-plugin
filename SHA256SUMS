@@ -1,7 +1,7 @@
-73af7db2b974c8aec16a1e7daaab5298b02e5b3aee1f31f3fd6256706a9f0305  ./CHANGELOG.md
+1d1a3629984bdfc7488d3bc21e54df9e859b3107b994e6cded9c23d3b9d81487  ./CHANGELOG.md
 fc22eaa49abbce58cd434f3b210f39e5bb589532cfc8621700c218871e07d7d1  ./IMPLEMENTATION.md
 fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0  ./LICENSE
-1cb960c37bcd10232d30ee8e35e6990e80549a0665414424430822bbbbaf5380  ./Panel.qml
+cc6a665197572bcea57d100c68cfe024d16a85e1ca2399489fd8a667112afbbb  ./Panel.qml
 896760ae4066b2a0d67f5cd3017f23e9004d71824856a34cd715c63e95fbb687  ./README.md
 89be9203bbae4da16d9904b83453ec97fa12ddb21f3d57c188bc9f26b8602e7e  ./TEST-REPORT.md
 9edbe1837bab7a1b1289beca21639406f2f3657b74b2fdc9ac7b38732a15fb22  ./build_release.py
@@ -10,13 +10,14 @@ fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0  ./LICENSE
 9f4ceb3952be47ab11ec3d38d4424e1a62849eeca67d087010a7b45325cc44b4  ./docs/PUBLISHING.md
 e1100d86a610903843bfdb881a5dd465e8c576087a0c2c93599251957e92a20d  ./docs/RELEASE-CHECKLIST.md
 022e98a1574c30169a402689f7b220b6a51b0da44364771f4db8a2266a8bc6c3  ./docs/TROUBLESHOOTING.md
-75bfb0b9ee9941e13ca1e31afffa6c0f219efdca4ad0e74b799ec580a35b75cf  ./docs/USAGE.md
+2383b6bfa9e9f9d5fa0e39e6f4cbea0b8f720e03a80d41cd7a840c48878cf39f  ./docs/USAGE.md
 e6a55e00cb45dabab1d005ba8ce2ab334a1d6b4727e73f14e2ec4f9cdd1eb24b  ./docs/变更记录/2026-10-12-rc1-reliability-review.md
 c97ed68f72a04e8a30b1cd5847d48f0f6a349a330e3d484c22152ebf41f05343  ./docs/变更记录/2026-10-12-theme-language-scratchpad.md
 ff83f36ec3038f93f382e947ef34ffa3bff127302fdf3f6c0d313fdbc9fee3d2  ./docs/变更记录/2026-10-13-gui-auto-setup-feedback.md
 53970379d545d0ce1655e23a82875b8f1b7510613203b1aadb62f838d3117656  ./docs/变更记录/2026-10-13-optional-preset-shortcuts.md
+e254dcbb1a434c19fa02eb7f5b12fe6cefa7bb848ac500445d79e4a5ac088cd5  ./docs/变更记录/2026-10-13-scrollable-check-report.md
 3f5892c39affecbe7987e8340b596ff1f5c1075cf7a7bd37b257340d84870a3b  ./examples/apps.toml
-b86ee17ca4cd0e747254d2d264ab51aacbf5851176e89cfa14adf6d6e3611f9d  ./install-omarchy-workspaces.sh
+4d5eff9a6710e6ddfea68892b88c19ec7a8a6243c2bee1835266facf291ea540  ./install-omarchy-workspaces.sh
 d730f6d8bfd1e1ddd713257a000b341bdb22c3314a906b4c1b903223baf61416  ./install.sh
 986e519245db5a5c32acc7437b213a3c8e8d475d7f25afec36d9b402f880cb56  ./manifest.json
 3c51de3911cd50ca7c0a3fde8f3789637518956ee204698da194fbc41893450a  ./qml/ActionButton.qml
@@ -71,5 +72,5 @@ a24e1d73792187445edde502f88770787767262dbec8ed11f2f424511ebcebc8  ./tests/test_r
 674af26693c8389e341c01d442f47c750d876359e3cced2ef482b44cc9cd049a  ./tests/test_registration.py
 b90e97ccb63bea519c612cbd086b8f4ebbbb790c76d1bc004028060a30519dd1  ./tests/test_release.py
 24d9e2c079f196f83b830d2ada4865109db69f5e23825dea52d79836737888ec  ./tests/test_workspaces.py
-5db68dca6381c57c576be155f523a53150f4aeb862d5022c8e45268ea8b0cf0f  ./tests/ui/tst_workspaces.qml
+78b5cc383a35d4e0ce6ff74766c8a3fe5cc8b6dd42bee7824267d6d3d0991eed  ./tests/ui/tst_workspaces.qml
 11b7673e16610586cda0039938cf4150954b74383bb515adb6e2757563cf6c1c  ./uninstall.sh

@@ -1049,26 +1049,46 @@ Item {
 
                         Rectangle {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: Math.min(100, messageLabel.implicitHeight + 20)
+                            Layout.preferredHeight: Math.min(Style.space(180), messageLabel.implicitHeight + Style.space(20))
                             visible: root.lastMessage !== ""
                             color: root.messageIsError ? theme.error : theme.notice
                             border.color: root.messageIsError ? root.danger : root.line
                             radius: theme.radius
                             Controls.ScrollView {
+                                id: reportScroll
                                 anchors.fill: parent
                                 anchors.margins: Style.space(10)
                                 contentWidth: availableWidth
+                                contentHeight: messageLabel.implicitHeight
                                 clip: true
                                 Controls.ScrollBar.horizontal.policy: Controls.ScrollBar.AlwaysOff
-                                Text {
+                                Controls.ScrollBar.vertical.policy: Controls.ScrollBar.AsNeeded
+                                WheelHandler {
+                                    target: null
+                                    onWheel: function (event) {
+                                        var delta = event.pixelDelta.y || event.angleDelta.y / 120 * Style.space(48);
+                                        var maximum = Math.max(0, reportScroll.contentHeight - reportScroll.availableHeight);
+                                        reportScroll.contentItem.contentY = Math.max(0, Math.min(maximum, reportScroll.contentItem.contentY - delta));
+                                        event.accepted = true;
+                                    }
+                                }
+                                Controls.TextArea {
                                     id: messageLabel
-                                    width: parent.width
+                                    width: reportScroll.availableWidth
                                     text: root.tr(root.lastMessage)
-                                    textFormat: Text.PlainText
+                                    textFormat: TextEdit.PlainText
+                                    readOnly: true
+                                    selectByMouse: true
+                                    persistentSelection: true
+                                    padding: 0
+                                    background: null
                                     color: root.messageIsError ? root.danger : root.ink
                                     font.family: theme.family
                                     font.pixelSize: Style.font.body
-                                    wrapMode: Text.WrapAnywhere
+                                    wrapMode: TextEdit.WrapAnywhere
+                                    onTextChanged: Qt.callLater(function () {
+                                        reportScroll.contentItem.contentY = 0;
+                                    })
                                     Accessible.role: Accessible.StaticText
                                     Accessible.name: text
                                 }

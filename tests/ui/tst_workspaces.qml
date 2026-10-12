@@ -127,6 +127,25 @@ Item {
             verify(q('opened && !busy && messageIsError && !confirmation.opened && appList.count === 0'))
             q('setLanguage("zh")')
         }
+        function test_06d_long_report_scrolls_and_new_report_resets_position() {
+            q('panel.width=1100;panel.height=850;receiveState({installed:true,needsInstall:false,active:true,revision:"fixture",apps:[],issues:[]}); opened=true; showMessage(Array.from({length:80},function(_,i){return "检查信息 "+i+" · long report"}).join("\\n"),false)');wait(100)
+            verify(q('reportScroll.contentHeight > reportScroll.availableHeight'))
+            verify(q('messageLabel.readOnly && messageLabel.selectByMouse'))
+            compare(q('reportScroll.contentItem.contentY'), 0)
+            mouseWheel(q('messageLabel'), 20, 20, 0, -360);wait(150)
+            verify(q('reportScroll.contentItem.contentY > 0'))
+            q('reportScroll.Controls.ScrollBar.vertical.position=1-reportScroll.Controls.ScrollBar.vertical.size');wait(50)
+            verify(q('reportScroll.contentItem.contentY >= reportScroll.contentHeight-reportScroll.availableHeight-2'))
+            q('panel.width=640;panel.height=480');wait(100)
+            q('outerScroll.contentItem.contentY=Math.max(0,outerScroll.contentHeight-outerScroll.availableHeight);reportScroll.contentItem.contentY=0');wait(50)
+            var outerPosition=q('outerScroll.contentItem.contentY')
+            mouseWheel(q('messageLabel'),20,20,0,-360);wait(100)
+            verify(q('reportScroll.contentItem.contentY > 0'))
+            compare(q('outerScroll.contentItem.contentY'),outerPosition)
+            q('messageLabel.selectAll()');verify(q('messageLabel.selectedText.indexOf("检查信息 79") >= 0'))
+            q('showMessage("new report",false)');wait(100)
+            compare(q('reportScroll.contentItem.contentY'),0)
+        }
         function test_07_install_gate() {
             q('receiveState({apps:[],issues:[],installed:false,needsInstall:true,pending:true});send({action:"set",app_id:"one"})')
             verify(q('!busy && messageIsError'))
