@@ -6,9 +6,9 @@
 
 Omarchy Workspaces 是面向 [Omarchy](https://github.com/omacom/omarchy) 的原生工作区管理插件。你可以为应用指定默认 Hyprland 工作区，通过受管启动器复用已有窗口，不必手写窗口规则，也不必反复寻找应用。
 
-> **发布状态：** `1.3.0-rc.1`（公开 Beta / RC）。主要适配 Omarchy 4.0.4 与 Hyprland Lua 配置。真实桌面验收尚未全部完成，**尚非稳定版**。
+> **发布状态：** `1.3.0-rc.1`（公开 Beta / RC）。主要适配 Omarchy 4.0.4 与 Hyprland Lua 配置。2026-10-13 已由用户完成新版界面的真实桌面验收，正式稳定版标签尚未发布。
 >
-> **新版界面预览：**按工作区分组、点击应用再编辑的界面位于 [Draft PR #1](https://github.com/CoderLambert/omarchy-workspace-plugin/pull/1)，分支 `codex/simplify-workspace-ui`。目前默认 `main` 安装**尚不包含这次界面重设计**。参见下方[体验新版界面](#体验新版界面)。
+> **新版界面：** 按工作区分组、点击应用再编辑的新版已通过 [PR #1](https://github.com/CoderLambert/omarchy-workspace-plugin/pull/1) 合并到 `main`，无需切换分支即可安装。
 
 ## 核心功能
 
@@ -56,23 +56,9 @@ bash install.sh
 
 也可以在 GitHub 点击 **Code → Download ZIP**，解压后进入包含 `manifest.json` 的目录运行 `bash install.sh`。这是用户级安装，**不需要作者的个人 dotfiles**。
 
-### 体验新版界面
+### 新版工作区管理界面
 
-新版按工作区集中展示应用；选择应用后才显示编辑表单，并把 **“保存”** 与 **“保存并移动”** 分开。目前它只在待审核分支，不在 `main`。
-
-若此前通过 `omarchy plugin add` 安装，可以这样更新：
-
-```bash
-PLUGIN="$HOME/.config/omarchy/plugins/lambert.workspaces"
-git -C "$PLUGIN" status --short     # 先确认并保留本地修改
-git -C "$PLUGIN" fetch origin codex/simplify-workspace-ui
-git -C "$PLUGIN" switch --detach FETCH_HEAD
-bash "$PLUGIN/install.sh" --backend-only
-omarchy restart shell
-~/.local/bin/omarchy-workspaces gui
-```
-
-**如果第一步显示本地修改，请先停止并检查**，不要强制覆盖。插件界面和 Python 后端必须来自同一源码版本，单凭显示的版本号一致还不够。设计和验收范围见预览分支的[界面简化说明](https://github.com/CoderLambert/omarchy-workspace-plugin/blob/codex/simplify-workspace-ui/docs/UI-SIMPLIFICATION.md)。
+当前 `main` 已包含新版：按工作区查看应用、点击应用编辑、区分 **“保存”** 与 **“保存并移动”**。详细设计及验证范围见[界面简化说明](docs/UI-SIMPLIFICATION.md)。已安装的用户按下方[升级](#升级)步骤同步界面和后端即可。
 
 ## 首次配置
 
@@ -173,12 +159,12 @@ omarchy-workspaces apply            # 重新应用已保存的分配
 
 ## 功能边界
 
-窗口复用仅针对**受管启动入口**，不会拦截所有启动应用的方式；多个已有窗口不会自动合并或关闭。普通浏览器标签页不能作为独立 Hyprland 窗口分配工作区；网页应用 / PWA 必须具备可信、独立的窗口身份。真实第三方应用、多显示器和新版图形界面仍需桌面验收。
+窗口复用仅针对**受管启动入口**，不会拦截所有启动应用的方式；多个已有窗口不会自动合并或关闭。普通浏览器标签页不能作为独立 Hyprland 窗口分配工作区；网页应用 / PWA 必须具备可信、独立的窗口身份。第三方应用和多显示器等未覆盖组合仍建议根据环境验证；新版界面已完成用户真实桌面验收。
 
 ## 相关文档
 
 - [安装、升级和卸载](docs/INSTALL.md) · [面板、命令行和配置](docs/USAGE.md) · [常见问题](docs/TROUBLESHOOTING.md)
-- [UI 重设计与测试](https://github.com/CoderLambert/omarchy-workspace-plugin/blob/codex/simplify-workspace-ui/docs/UI-SIMPLIFICATION.md)（预览分支）
+- [UI 重设计与测试](docs/UI-SIMPLIFICATION.md)
 - [发布验收清单](docs/RELEASE-CHECKLIST.md) · [变更记录](CHANGELOG.md)
 
 **许可证：**[GPL-3.0-only](LICENSE)。`reference/` 中引用的 Omarchy 代码保留原始许可证，详见[第三方来源说明](reference/SOURCES.md)。
