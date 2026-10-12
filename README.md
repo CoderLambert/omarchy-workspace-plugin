@@ -10,6 +10,12 @@ Omarchy Workspaces is a native [Omarchy](https://github.com/omacom/omarchy) plug
 >
 > **Updated UI:** The workspace-grouped panel is included in `main` following [PR #1](https://github.com/CoderLambert/omarchy-workspace-plugin/pull/1). No special branch checkout is required.
 
+## Screenshot
+
+![Omarchy Workspaces running on Omarchy — workspace assignments grouped by workspace](preview.png)
+
+*Real Omarchy desktop screenshot, shared with the author's permission. App assignments are customizable.*
+
 ## Why use it?
 
 | Feature | What it does |
