@@ -55,7 +55,7 @@ bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
 
 ## 4. 更新策略
 
-当前版本为 `1.3.0-rc.1`，面板同时校验版本号和 Python 后端源码指纹。禁止用仅改版本字段的方式伪装同步。CI 运行于 PR / main，构建产物保存在 Actions artifacts；创建 RC / Stable Release 仍由维护者在检查验收清单后明确执行，工作流不会自动发布稳定版。
+当前版本为 `1.3.0-rc.2`，面板同时校验版本号和 Python 后端源码指纹。禁止用仅改版本字段的方式伪装同步。CI 运行于 PR / main，构建产物保存在 Actions artifacts；创建 RC / Stable Release 仍由维护者在检查验收清单后明确执行，工作流不会自动发布稳定版。
 
 
 发布者同步更新 Python `__version__`、manifest、文档和更新记录，重新验证后发布相应提交或标签。
@@ -68,7 +68,7 @@ bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
 
 再执行 `omarchy-workspaces --version`，重新打开面板。界面与后端版本不一致时，优先完成此步骤。
 
-本地 ZIP 安装用户则重新运行新包的 `bash install.sh --no-setup`，保留应用分配和生效规则。不要混用不同来源的旧包去覆盖新版本。
+本地 ZIP 安装用户则重新运行新包的 `bash install.sh --no-setup`，保留应用分配，自动刷新已启用规则，保留尚未应用的草稿。不要混用不同来源的旧包去覆盖新版本。
 
 ## 5. 构建离线分发包
 
@@ -76,7 +76,7 @@ bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
 
 ```bash
 python3 build_release.py /tmp/install-omarchy-workspaces.sh
-python3 build_source.py /tmp/omarchy-workspaces-plugin-1.3.0-rc.1.zip
+python3 build_source.py /tmp/omarchy-workspaces-plugin-1.3.0-rc.2.zip
 ```
 
 构建结果包括完整源码与文档的 ZIP，及嵌入载荷校验的单文件安装器。ZIP 内 `SHA256SUMS` 用于校验展开后的文件；验证后一起提供给使用者。

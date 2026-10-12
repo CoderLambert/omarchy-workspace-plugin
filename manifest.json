@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "lambert.workspaces",
   "name": "Omarchy Workspaces",
-  "version": "1.3.0-rc.1",
+  "version": "1.3.0-rc.2",
   "description": "Assign apps to workspaces, reuse existing windows, and safely manage launch shortcuts.",
   "kinds": [
     "panel"

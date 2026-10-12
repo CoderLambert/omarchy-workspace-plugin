@@ -64,7 +64,7 @@ Omarchy Shell 加载 QML 并注入插件上下文，面板通过 `open(payloadJs
 
 菜单升级将旧版自定义 XDG 路径中的受管登记迁移到官方固定路径，只处理本工具的受管块，保留新旧文件中的用户项。菜单恢复记录仍位于本工具的 XDG 状态目录。
 
-安装记录、菜单恢复记录、规则应用事务分别管理各自文件。默认安装不重新应用规则，也不更改配置恢复基线；这使从 1.1.3 升级面板不必先接纳 Grok Bot 启动项漂移。
+安装记录、菜单恢复记录、规则应用事务分别管理各自文件。安装器在安装事务锁与规则事务锁内更新后端，随后自动刷新上一次已启用的规则。刷新不会应用或改写 TOML 草稿，不移动窗口，不自动接纳外部修改。规则刷新失败时保留已更新的后端供恢复，CLI 非零退出、GUI 报告部分完成。停用状态和中断事务现场保留。
 
 ## 安装与原生管理器的分工
 
@@ -90,8 +90,9 @@ Omarchy Shell 加载 QML 并注入插件上下文，面板通过 `open(payloadJs
 ```lua
 hl.window_rule({
   name = "ows-slack-0",
-  match = { initial_class = "^Slack$" },
-  workspace = "4 silent"
+  match = { initial_class = "^Slack$", workspace = "s[false]" },
+  workspace = "4",
+  focus_on_activate = true
 })
 ```
 

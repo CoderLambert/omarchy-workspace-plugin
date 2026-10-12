@@ -1,6 +1,6 @@
 # 安装、升级与卸载
 
-适用于 Omarchy Workspaces 1.3.0-rc.1，主目标为 Omarchy 4.0.4。
+适用于 Omarchy Workspaces 1.3.0-rc.2，主目标为 Omarchy 4.0.4。
 
 ## 1. 安装前提
 
@@ -28,8 +28,8 @@ bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
 也可下载仓库 ZIP 后在根目录运行 `bash install.sh`；以下为离线构建包的安装方式。
 
 ```bash
-unzip ~/Downloads/omarchy-workspaces-plugin-1.3.0-rc.1.zip -d ~/Downloads/omarchy-workspaces-1.3.0-rc.1
-cd ~/Downloads/omarchy-workspaces-1.3.0-rc.1/omarchy-workspaces
+unzip ~/Downloads/omarchy-workspaces-plugin-1.3.0-rc.2.zip -d ~/Downloads/omarchy-workspaces-1.3.0-rc.2
+cd ~/Downloads/omarchy-workspaces-1.3.0-rc.2/omarchy-workspaces
 bash install.sh
 ```
 
@@ -83,13 +83,13 @@ bash install.sh --no-setup
 ~/.local/bin/omarchy-workspaces --version
 ```
 
-预期显示 `1.3.0-rc.1`。无需先卸载，不要删除 `apps.toml`、状态目录或恢复记录。旧分配继续使用，原“工作区配置”改为优先打开面板。
+预期显示 `1.3.0-rc.2`。无需先卸载，不要删除 `apps.toml`、状态目录或恢复记录。安装器自动刷新已启用规则，旧分配继续使用，原“工作区配置”改为优先打开面板。
 
-Git 插件更新后，运行插件目录中的 `install.sh --backend-only` 同步后端。即使版本号相同，源码指纹不同也会触发更新提示；可从面板一键更新组件。
+Git 插件更新后，运行插件目录中的 `install.sh --backend-only` 同步后端并自动刷新已启用规则，不再需要额外运行 apply。未应用的草稿不参与刷新，已有窗口保持原位。即使版本号相同，源码指纹不同也会触发更新提示；可从面板一键更新组件。
 
-以后升级仍重复运行新版安装器。`--no-setup` 是兼容参数，与 1.3.0-rc.1 默认行为一致；旧版无参数会扫描，新版已经改为显式 `--setup`。
+以后升级仍重复运行新版安装器。`--no-setup` 是兼容参数，与 1.3.0-rc.2 默认行为一致；旧版无参数会扫描，新版已经改为显式 `--setup`。
 
-若存在中断的配置事务，也可先补装/更新后端；安装器原样保留 `pending.json` 和配置现场。安装后先执行 `omarchy-workspaces recover`，再继续修改分配。
+若存在中断的配置事务，也可先补装/更新后端；安装器原样保留 `pending.json` 和配置现场。安装后先执行 `omarchy-workspaces recover`，再运行 `omarchy-workspaces refresh-rules`，继续修改分配。
 
 升级代码不会接纳原 `.desktop` 被第三方修改的内容。遇到漂移报告，按[故障排查](TROUBLESHOOTING.md#受管文件被其他工具修改)核对后再决定是否 `apply --adopt`。
 
@@ -101,7 +101,7 @@ bash install.sh --help
 
 | 参数 | 行为 |
 | --- | --- |
-| 无参数 | 安装后端、插件和菜单；保留分配与生效规则 |
+| 无参数 | 安装后端、插件和菜单；保留分配，自动刷新已启用规则，保持未启用状态 |
 | `--no-setup` | 与默认行为相同，兼容旧版升级命令 |
 | `--setup` | 安装后自动识别预设并整理已登记窗口 |
 | `--cli-only` | 安装后端和菜单，不安装原生面板；已有插件不会因此被删除 |
@@ -121,7 +121,7 @@ bash ~/Downloads/install-omarchy-workspaces.sh
 支持相同安装参数，例如 `--no-setup`。只提取源码、不安装：
 
 ```bash
-bash ~/Downloads/install-omarchy-workspaces.sh --extract ~/Downloads/omarchy-workspaces-source-1.3.0-rc.1
+bash ~/Downloads/install-omarchy-workspaces.sh --extract ~/Downloads/omarchy-workspaces-source-1.3.0-rc.2
 ```
 
 目标目录必须尚不存在。提取目录本身就是源码根目录，包含 `install.sh`，不用再进入同名子目录。安装器会验证内置载荷的 SHA-256。完整 ZIP 内文件可在解压项目根目录检查：
@@ -189,7 +189,7 @@ GitHub 仓库的 **Code → Download ZIP** 也可用于本地安装；解压后�
 
 ## 10. 安装后验收
 
-1. `omarchy-workspaces --version` 显示 `1.3.0-rc.1`。
+1. `omarchy-workspaces --version` 显示 `1.3.0-rc.2`。
 2. 系统菜单只有一个“工作区配置”，能打开面板并显示原登记。
 3. 选一个已登记应用，从其他工作区再次打开，聚焦原窗口。
 4. 完全关闭它的窗口，连续点击受管入口，检查没有重复拉起。

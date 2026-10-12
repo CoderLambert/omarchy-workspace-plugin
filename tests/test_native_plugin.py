@@ -78,6 +78,91 @@ class NativePluginTests(unittest.TestCase):
         self.assertNotIn('tui_launches', d)
         self.assertEqual(len(list(self.plugin.rglob('__pycache__'))), 0)
 
+    def legacy_rules(self, workspace=4):
+        import hashlib
+        self.run_cli('apply')
+        rule = self.root / 'config/hypr/app-workspaces.lua'
+        rule.write_text(rule.read_text().replace('workspace = "4", focus_on_activate = true',
+                                                f'workspace = "{workspace} silent"'))
+        manifest = self.root / 'state/omarchy-workspaces/manifest.json'
+        state = json.loads(manifest.read_text())
+        state['files'][str(rule)]['sha256'] = hashlib.sha256(rule.read_bytes()).hexdigest()
+        state['config']['apps']['slack']['workspace'] = workspace
+        manifest.write_text(json.dumps(state))
+        return rule, manifest
+
+    def test_upgrade_refreshes_legacy_rules_preserves_draft_windows_and_bindings(self):
+        rule, manifest = self.legacy_rules()
+        self.c['apps']['slack']['workspace'] = 5
+        self.config.write_text(dumps(self.c) + '\n# unapplied draft\n')
+        draft = self.config.read_bytes()
+        data = json.loads(self.ipc.read_text())
+        data['clients'] = [{'address': '0xa', 'initialClass': 'Slack', 'mapped': True,
+                            'workspace': {'id': -99, 'name': 'special:scratchpad'}}]
+        data['original_binds'] = data['binds'] = [{'combo': 'SUPER + Return', 'modmask': 64,
+            'key': 'Return', 'dispatcher': 'exec', 'arg': 'stock-terminal'}]
+        self.ipc.write_text(json.dumps(data))
+        for _ in range(2):
+            result = self.install('--backend-only', source=self.plugin)
+            self.assertIn('已自动刷新', result.stdout)
+            self.assertNotIn('silent', rule.read_text())
+            self.assertIn('workspace = "4", focus_on_activate = true', rule.read_text())
+            self.assertEqual(self.config.read_bytes(), draft)
+            self.assertEqual(json.loads(manifest.read_text())['config']['apps']['slack']['workspace'], 4)
+            current = json.loads(self.ipc.read_text())
+            self.assertEqual(current['clients'], data['clients'])
+            self.assertEqual(current['binds'], data['binds'])
+            self.assertEqual(current['launches'], [])
+        self.run_cli('refresh-rules')
+        self.assertEqual(self.config.read_bytes(), draft)
+        self.assertNotIn('silent', rule.read_text())
+        state = self.bridge({'action': 'status'})['state']
+        self.assertTrue(state['active'])
+        self.assertTrue(state['draft'])
+        self.assertFalse(state['needsInstall'])
+
+    def test_gui_backend_update_also_refreshes_active_legacy_rules(self):
+        rule, _ = self.legacy_rules()
+        backend = self.root / 'data/omarchy-workspaces/omarchy_workspaces/hypr.py'
+        backend.write_text(backend.read_text() + '\n# old backend\n')
+        result = self.bridge({'action': 'install'})
+        self.assertIn('规则已自动刷新', result['message'])
+        self.assertNotIn('silent', rule.read_text())
+        self.assertFalse(result['state']['needsInstall'])
+
+    def test_upgrade_reports_rule_drift_without_adopting_or_overwriting_it(self):
+        rule, manifest = self.legacy_rules()
+        rule.write_text(rule.read_text() + '\n-- external modification\n')
+        before = {path: path.read_bytes() for path in (rule, manifest, self.config)}
+        result = self.install('--backend-only', source=self.plugin, success=False)
+        self.assertIn('规则刷新失败', result.stdout)
+        self.assertIn('被其他工具修改', result.stdout)
+        self.assertFalse(self.bridge({'action': 'status'})['state']['needsInstall'])
+        result = self.bridge({'action': 'install'}, success=False)
+        self.assertIn('规则刷新失败', result['message'])
+        self.assertFalse(result['state']['needsInstall'])
+        for path, data in before.items():
+            self.assertEqual(path.read_bytes(), data)
+
+    def test_upgrade_rolls_back_rejected_rules_but_keeps_updated_backend(self):
+        rule, manifest = self.legacy_rules(workspace=13)
+        before = {path: path.read_bytes() for path in (rule, manifest, self.config)}
+        result = self.install('--backend-only', source=self.plugin, success=False)
+        self.assertIn('simulated compositor error', result.stdout)
+        for path, data in before.items():
+            self.assertEqual(path.read_bytes(), data)
+        self.assertFalse((self.root / 'state/omarchy-workspaces/pending.json').exists())
+        self.assertEqual(self.run_cli('--version').stdout.strip(), __version__)
+
+    def test_reinstall_after_reset_does_not_reactivate_saved_assignments(self):
+        self.run_cli('apply')
+        self.run_cli('reset')
+        config = self.config.read_bytes()
+        self.install('--backend-only', source=self.plugin)
+        self.assertEqual(self.config.read_bytes(), config)
+        self.assertFalse(self.bridge({'action': 'status'})['state']['active'])
+        self.assertFalse((self.root / 'config/hypr/app-workspaces.lua').exists())
+
     def test_overlay_launcher_is_recognized_and_preserved_on_repeated_install(self):
         from omarchy_workspaces.plugin import OVERLAY_LAUNCHER
         self.binary.write_text(OVERLAY_LAUNCHER)
@@ -220,7 +305,8 @@ class NativePluginTests(unittest.TestCase):
         }))
         pending = journal.read_bytes()
         (self.root / 'data/omarchy-workspaces/omarchy_workspaces/__init__.py').write_text('__version__ = "1.1.3"\n')
-        installed = self.bridge({'action': 'install'})
+        installed = self.bridge({'action': 'install'}, success=False)
+        self.assertIn('规则尚未刷新', installed['message'])
         self.assertFalse(installed['state']['needsInstall'])
         self.assertTrue(installed['state']['pending'])
         self.assertEqual(journal.read_bytes(), pending)

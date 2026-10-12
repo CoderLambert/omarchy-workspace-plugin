@@ -6,7 +6,7 @@
 
 Omarchy Workspaces is a native [Omarchy](https://github.com/omacom/omarchy) plugin for managing where apps open in Hyprland. Assign a preferred workspace to each app, bring an existing window into focus instead of launching another one, and keep your everyday desktop organized without editing window rules by hand.
 
-> **Release status:** `1.3.0-rc.1` (public beta / release candidate). Primary target: Omarchy 4.0.4 with Hyprland's Lua configuration. The owner has completed real-desktop acceptance of the redesigned panel (2026-10-13). The project has not yet tagged a stable release.
+> **Release status:** `1.3.0-rc.2` (public beta / release candidate). Primary target: Omarchy 4.0.4 with Hyprland's Lua configuration. The owner has completed real-desktop acceptance of the redesigned panel (2026-10-13). The project has not yet tagged a stable release.
 >
 > **Updated UI:** The workspace-grouped panel is included in `main` following [PR #1](https://github.com/CoderLambert/omarchy-workspace-plugin/pull/1). No special branch checkout is required.
 
@@ -134,10 +134,11 @@ For a standard Git-installed plugin, update the plugin using Omarchy's update co
 ```bash
 omarchy plugin update lambert.workspaces
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
-omarchy restart shell
 ```
 
 If you are testing the preview branch, a regular plugin update may change the checked-out revision: review which branch or commit you intend to run. Source/ZIP installs can be upgraded from a fresh source directory using `bash install.sh --no-setup`.
+
+The backend installer automatically regenerates and reloads already-enabled workspace rules, including the new app-follow behavior. It uses the last applied assignments and preserves unapplied drafts; existing windows are not moved. New or disabled configurations stay inactive until you choose Auto setup or apply them. If refresh is blocked by external changes or an interrupted transaction, installation reports the partial result instead of claiming full success. After resolving it, run `omarchy-workspaces refresh-rules` or rerun the installer.
 
 Existing app assignments in `apps.toml` are preserved. Do not delete your configuration or reinstall from scratch just to update the UI.
 

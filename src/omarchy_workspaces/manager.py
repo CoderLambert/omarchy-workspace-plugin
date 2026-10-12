@@ -94,73 +94,87 @@ class Manager:
 
     def apply(self, config, adopt=False, text=None, expected_revision=None, expected_bindings=None):
         with lock(self.p.state / "apply.lock"):
-            if self.journal.exists():
-                raise Error("存在中断事务，请先执行 omarchy-workspaces recover")
-            self.check_revision(expected_revision)
-            validate(config)
-            state = self.state()
-            records = state["files"]
-            self.hypr.reload()  # Baseline must be valid before touching any file.
-            backend, main = detect(self.p, config, self.hypr)
-            generated = self.p.config / f"hypr/app-workspaces.{ 'lua' if backend == 'lua' else 'conf'}"
-            binds = self.hypr.query("binds")
-            if expected_bindings is not None:
-                from .hypr import binding_signature
-                if binding_signature(binds) != expected_bindings:
-                    raise Error("快捷键绑定在预览后发生变化，请重新执行自动预设；本次修改未写入")
-            source, changes = generate(config, backend, self.p.binary, binds)
-            planned = {str(generated): (source.encode(), 0o600)}
-            current_main = main.read_text()
-            clean = strip_block(current_main)
-            prefix = "--" if backend == "lua" else "#"
-            include = f"dofile({json.dumps(str(generated), ensure_ascii=False)})" if backend == "lua" else f"source = {generated}"
-            planned[str(main)] = ((clean.rstrip() + f"\n\n{prefix} {BEGIN}\n{include}\n{prefix} {END}\n").encode(), main.stat().st_mode & 0o777)
-            for app_id, app in config["apps"].items():
-                if not app.get("menu", True):
-                    continue
-                original = self.desktops.text(app["desktop"], records, adopt) if app.get("desktop") else None
-                if original:
-                    planned[str(self.p.apps / app["desktop"])] = (replace_fields(original, {"NoDisplay": "true"}).encode(), 0o644)
-                planned[str(self.p.apps / f"ows-{app_id}.desktop")] = (proxy(app_id, app, str(self.p.binary), original).encode(), 0o644)
-            config_text = text if text is not None else dumps(config)
-            edits = dict(planned)
-            next_records = {}
-            for target, (data, mode) in planned.items():
-                path = Path(target)
-                previous = records.get(target)
+            return self._apply_locked(config, adopt, text, expected_revision, expected_bindings)
+
+    def refresh_rules(self):
+        """Regenerate the last enabled assignments without applying draft edits."""
+        with lock(self.p.state / "apply.lock"):
+            return self._refresh_rules_locked()
+
+    def _refresh_rules_locked(self):
+        # The installer already holds apply.lock while updating the runtime.
+        return self._apply_locked(self.applied_config(), write_config=False)
+
+    def _apply_locked(self, config, adopt=False, text=None, expected_revision=None,
+                      expected_bindings=None, *, write_config=True):
+        if self.journal.exists():
+            raise Error("存在中断事务，请先执行 omarchy-workspaces recover")
+        self.check_revision(expected_revision)
+        validate(config)
+        state = self.state()
+        records = state["files"]
+        self.hypr.reload()  # Baseline must be valid before touching any file.
+        backend, main = detect(self.p, config, self.hypr)
+        generated = self.p.config / f"hypr/app-workspaces.{ 'lua' if backend == 'lua' else 'conf'}"
+        binds = self.hypr.query("binds")
+        if expected_bindings is not None:
+            from .hypr import binding_signature
+            if binding_signature(binds) != expected_bindings:
+                raise Error("快捷键绑定在预览后发生变化，请重新执行自动预设；本次修改未写入")
+        source, changes = generate(config, backend, self.p.binary, binds)
+        planned = {str(generated): (source.encode(), 0o600)}
+        current_main = main.read_text()
+        clean = strip_block(current_main)
+        prefix = "--" if backend == "lua" else "#"
+        include = f"dofile({json.dumps(str(generated), ensure_ascii=False)})" if backend == "lua" else f"source = {generated}"
+        planned[str(main)] = ((clean.rstrip() + f"\n\n{prefix} {BEGIN}\n{include}\n{prefix} {END}\n").encode(), main.stat().st_mode & 0o777)
+        for app_id, app in config["apps"].items():
+            if not app.get("menu", True):
+                continue
+            original = self.desktops.text(app["desktop"], records, adopt) if app.get("desktop") else None
+            if original:
+                planned[str(self.p.apps / app["desktop"])] = (replace_fields(original, {"NoDisplay": "true"}).encode(), 0o644)
+            planned[str(self.p.apps / f"ows-{app_id}.desktop")] = (proxy(app_id, app, str(self.p.binary), original).encode(), 0o644)
+        config_text = text if text is not None else dumps(config)
+        edits = dict(planned)
+        next_records = {}
+        for target, (data, mode) in planned.items():
+            path = Path(target)
+            previous = records.get(target)
+            now = snapshot(path)
+            is_main = path == main
+            if not previous and now is not None and (path == generated or path.name.startswith("ows-")):
+                raise Error(f"已有同名非受管文件：{path}；请先移动该文件以免覆盖")
+            drift = previous and now is not None and digest(base64.b64decode(now["data"])) != previous["sha256"]
+            if previous and drift and not is_main and not adopt:
+                raise Error(f"受管文件被其他工具修改：{path}；doctor 检查后可 apply --adopt 保留现状作为恢复基线")
+            original = now if not previous or (drift and adopt) else previous["original"]
+            next_records[target] = {"original": original, "sha256": digest(data), "main": is_main}
+        for target, record in records.items():
+            if target in planned:
+                continue
+            path = Path(target)
+            if record.get("main"):
+                if path.exists():
+                    edits[target] = (strip_block(path.read_text()).encode(), path.stat().st_mode & 0o777)
+            else:
                 now = snapshot(path)
-                is_main = path == main
-                if not previous and now is not None and (path == generated or path.name.startswith("ows-")):
-                    raise Error(f"已有同名非受管文件：{path}；请先移动该文件以免覆盖")
-                drift = previous and now is not None and digest(base64.b64decode(now["data"])) != previous["sha256"]
-                if previous and drift and not is_main and not adopt:
-                    raise Error(f"受管文件被其他工具修改：{path}；doctor 检查后可 apply --adopt 保留现状作为恢复基线")
-                original = now if not previous or (drift and adopt) else previous["original"]
-                next_records[target] = {"original": original, "sha256": digest(data), "main": is_main}
-            for target, record in records.items():
-                if target in planned:
-                    continue
-                path = Path(target)
-                if record.get("main"):
-                    if path.exists():
-                        edits[target] = (strip_block(path.read_text()).encode(), path.stat().st_mode & 0o777)
+                drift = now is not None and digest(base64.b64decode(now["data"])) != record["sha256"]
+                if adopt and drift:
+                    # An edited draft may remove this application. Explicit
+                    # adoption keeps its external update as an unmanaged
+                    # file instead of requiring the deleted app to return.
+                    edits[target] = decode(now)
                 else:
-                    now = snapshot(path)
-                    drift = now is not None and digest(base64.b64decode(now["data"])) != record["sha256"]
-                    if adopt and drift:
-                        # An edited draft may remove this application. Explicit
-                        # adoption keeps its external update as an unmanaged
-                        # file instead of requiring the deleted app to return.
-                        edits[target] = decode(now)
-                    else:
-                        self.check_owned(path, record)
-                        edits[target] = decode(record["original"])
+                    self.check_owned(path, record)
+                    edits[target] = decode(record["original"])
+        if write_config:
             edits[str(self.p.file)] = (config_text.encode(), 0o600)
-            next_state = {"version": 1, "files": next_records, "config": config}
-            edits[str(self.state_file)] = (json.dumps(next_state, ensure_ascii=False, indent=2).encode(), 0o600)
-            self.commit(edits, config)
-            self.refresh()
-            return changes
+        next_state = {"version": 1, "files": next_records, "config": config}
+        edits[str(self.state_file)] = (json.dumps(next_state, ensure_ascii=False, indent=2).encode(), 0o600)
+        self.commit(edits, config)
+        self.refresh()
+        return changes
 
     def check_owned(self, path, record):
         now = snapshot(path)

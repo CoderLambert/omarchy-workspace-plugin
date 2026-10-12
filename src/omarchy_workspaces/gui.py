@@ -111,7 +111,16 @@ def execute(request, manager, source_root):
     if action == "install":
         from .installer import install
         result = install(source_root, backend_only=True)
-        return "后端与菜单已就绪。首次使用请点击“自动预设”或“新增应用”。" + "\n".join(result["warnings"])
+        heading = {
+            "refreshed": "后端已更新，已启用的工作区规则已自动刷新。现有窗口未移动，未应用的草稿已保留。",
+            "inactive": "后端与菜单已就绪。首次使用请点击“自动预设”或“新增应用”。",
+            "blocked": "后端已更新，存在中断事务，工作区规则尚未刷新。恢复后请重新应用规则。",
+            "failed": "后端已更新，工作区规则刷新失败。请处理下方问题后重试。",
+        }[result["rulesRefresh"]]
+        message = "\n".join([heading, *result["warnings"]])
+        if result["rulesRefresh"] in ("blocked", "failed"):
+            raise Error(message)
+        return message
     if (backend_version(manager.p) != __version__ or not source_build(source_root)
             or backend_build(manager.p) != source_build(source_root)):
         raise Error("插件与后端版本或构建不同，请先点击“安装 / 更新后端”")

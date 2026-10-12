@@ -14,7 +14,7 @@ from . import __version__
 from .build import source_build
 from .core import Error, Paths, atomic, lock
 from .desktop import exec_line
-from .manager import restore, snapshot
+from .manager import Manager, restore, snapshot
 from .menu import locations, register as register_menu
 from .plugin import LAUNCHER_MARKER, PLUGIN_ID, directory, refresh_plugin, overlay_launcher
 
@@ -175,10 +175,23 @@ def install(root, *, cli_only=False, backend_only=False):
             shutil.rmtree(stage_root, ignore_errors=True)
             if plugin_work:
                 shutil.rmtree(plugin_work, ignore_errors=True)
+        rules_refresh = "inactive"
+        try:
+            manager = Manager(paths)
+            if manager.journal.exists():
+                rules_refresh = "blocked"
+            elif "config" in manager.state():
+                manager._refresh_rules_locked()
+                rules_refresh = "refreshed"
+        except (Error, OSError, ValueError, subprocess.TimeoutExpired) as exc:
+            # Runtime is repaired, while Manager retains/rolls back rule files.
+            # Do not adopt external modifications or discard recovery records.
+            rules_refresh = "failed"
+            warnings.append(f"后端已更新，但工作区规则刷新失败：{exc}。处理后运行 omarchy-workspaces refresh-rules。")
     if install_plugin and not refresh_plugin(enable=True):
         warnings.append(f"插件已安装，Shell 尚未启用；进入桌面后运行 omarchy-shell shell rescanPlugins，再运行 omarchy plugin enable {PLUGIN_ID}。")
     return {"version": __version__, "binary": str(paths.binary), "pluginInstalled": install_plugin or plugin.is_dir(),
-            "warnings": warnings}
+            "warnings": warnings, "rulesRefresh": rules_refresh}
 
 
 def main(root, argv=None):
@@ -195,9 +208,14 @@ def main(root, argv=None):
         print(f"已安装 Omarchy Workspaces {result['version']}：{result['binary']}")
         for warning in result["warnings"]:
             print(warning)
+        if result["rulesRefresh"] == "refreshed":
+            print("已自动刷新已启用的工作区规则。应用分配与未应用的草稿已保留，现有窗口未移动。")
+        elif result["rulesRefresh"] in ("blocked", "failed"):
+            print("组件已安装，工作区规则尚未刷新。请处理上面的提示后重试。")
+            return 1
         if args.setup:
             return subprocess.run([result["binary"], "setup"], check=False).returncode
-        print("现有分配与生效规则已保留。打开系统菜单 → 工作区配置，或运行 omarchy-workspaces gui。")
+        print("打开系统菜单 → 工作区配置，或运行 omarchy-workspaces gui。")
         print("首次使用可在面板选择“自动预设”，或运行 omarchy-workspaces setup。")
         return 0
     except (Error, OSError, ValueError, subprocess.TimeoutExpired) as exc:

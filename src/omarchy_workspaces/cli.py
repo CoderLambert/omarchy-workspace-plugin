@@ -493,7 +493,7 @@ def parser():
     result = argparse.ArgumentParser(description="Omarchy 工作区与应用窗口复用管理")
     result.add_argument("--version", action="version", version=__version__)
     commands = result.add_subparsers(dest="action", required=True)
-    for command in ("wizard", "list", "doctor", "recover", "windows", "uninstall", "reset", "gui", "repair-menu"):
+    for command in ("wizard", "list", "doctor", "recover", "windows", "uninstall", "reset", "gui", "repair-menu", "refresh-rules"):
         commands.add_parser(command)
     sub = commands.add_parser("setup")
     sub.add_argument("--with-shortcuts", action="store_true", help="启用可选应用启动/复用快捷键，逐项确认冲突")
@@ -555,6 +555,9 @@ def main(argv=None):
                 print(f"版本 {current['version']}；管理{'生效' if current['active'] else '未启用'}；{len(current['apps'])} 个已登记应用")
                 for issue in current['issues']:
                     print('问题：' + issue)
+        elif args.action == "refresh-rules":
+            manager.refresh_rules()
+            print("已自动刷新已启用的工作区规则。应用分配与未应用的草稿已保留，现有窗口未移动。")
         elif args.action == "repair-menu":
             refreshed = register_menu(p)
             print('已添加 Omarchy 系统菜单：工作区配置' if refreshed else '已添加菜单入口；桌面启动后执行 omarchy-menu refresh')

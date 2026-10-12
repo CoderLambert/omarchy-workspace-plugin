@@ -6,7 +6,7 @@
 
 Omarchy Workspaces 是面向 [Omarchy](https://github.com/omacom/omarchy) 的原生工作区管理插件。你可以为应用指定默认 Hyprland 工作区，通过受管启动器复用已有窗口，不必手写窗口规则，也不必反复寻找应用。
 
-> **发布状态：** `1.3.0-rc.1`（公开 Beta / RC）。主要适配 Omarchy 4.0.4 与 Hyprland Lua 配置。2026-10-13 已由用户完成新版界面的真实桌面验收，正式稳定版标签尚未发布。
+> **发布状态：** `1.3.0-rc.2`（公开 Beta / RC）。主要适配 Omarchy 4.0.4 与 Hyprland Lua 配置。2026-10-13 已由用户完成新版界面的真实桌面验收，正式稳定版标签尚未发布。
 >
 > **新版界面：** 按工作区分组、点击应用再编辑的新版已通过 [PR #1](https://github.com/CoderLambert/omarchy-workspace-plugin/pull/1) 合并到 `main`，无需切换分支即可安装。
 
@@ -135,10 +135,11 @@ omarchy-workspaces setup --with-shortcuts
 ```bash
 omarchy plugin update lambert.workspaces
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
-omarchy restart shell
 ```
 
 如果正在试用预览分支，正常执行插件更新可能改变所处的提交，请先确认目标分支。源码 / ZIP 安装则下载新版后运行 `bash install.sh --no-setup`。
+
+后端安装器会自动重新生成并加载**已经启用**的工作区规则，包括新开应用自动跟随。使用上一次已应用的分配，保留尚未应用的草稿，不移动现有窗口。首次安装或已停用的配置保持未启用，由你选择自动预设或应用配置。外部文件修改或中断事务会阻止刷新，安装器会明确报告部分完成；处理问题后运行 `omarchy-workspaces refresh-rules` 或重新运行安装器。
 
 `apps.toml` 中已经登记的应用和分配会保留。无需为了更新 UI 删除配置或先卸载。
 

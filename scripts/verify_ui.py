@@ -75,7 +75,7 @@ def evaluate(code):
     return result[0] if isinstance(result, tuple) else result
 
 fixture = {
-    'version':'1.3.0-rc.1', 'backendVersion':'1.3.0-rc.1', 'installed':True,
+    'version':'1.3.0-rc.2', 'backendVersion':'1.3.0-rc.2', 'installed':True,
     'needsInstall':False, 'active':True, 'draft':False, 'pending':False,
     'revision':'fixture-revision', 'configPath':'/home/demo/.config/omarchy-workspaces/apps.toml',
     'issues':[],

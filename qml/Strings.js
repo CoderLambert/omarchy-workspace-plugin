@@ -2,6 +2,11 @@
 
 // Source-language keys are stable; user app names and paths are never rewritten.
 var english = {
+    "后端已更新，已启用的工作区规则已自动刷新。现有窗口未移动，未应用的草稿已保留。": "Backend updated and enabled workspace rules refreshed automatically. Existing windows stayed in place and unapplied drafts were preserved.",
+    "后端已更新，存在中断事务，工作区规则尚未刷新。恢复后请重新应用规则。": "Backend updated, but workspace rules were not refreshed because a transaction is interrupted. Recover it, then refresh the rules.",
+    "后端已更新，工作区规则刷新失败。请处理下方问题后重试。": "Backend updated, but workspace rules could not be refreshed. Resolve the issues below and retry.",
+    "后端已更新，但工作区规则刷新失败：{0}。处理后运行 omarchy-workspaces refresh-rules。": "Backend updated, but workspace rules could not be refreshed: {0}. Resolve the issue, then run omarchy-workspaces refresh-rules.",
+    "发现中断的配置事务，已原样保留。安装后请先执行 omarchy-workspaces recover，再应用配置。": "An interrupted configuration transaction was preserved. Run omarchy-workspaces recover, then refresh the rules.",
     "安排应用位置，设置再次打开的方式。": "Choose where apps open and what happens when you open them again.",
     "请先返回并处理未保存的设置，再接纳外部修改。": "Return to your app settings and save or discard your edits before adopting external changes.",
     "工作区安排": "Workspace assignments",
