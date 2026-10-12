@@ -46,10 +46,11 @@ Python 后端只在需要时执行，不安装新的常驻后台服务。安装�
 ```bash
 omarchy plugin add https://github.com/CoderLambert/omarchy-workspace-plugin.git --enable
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
+omarchy restart shell
 ~/.local/bin/omarchy-workspaces gui
 ```
 
-第一条安装并启用原生面板；第二条安装 Python 后端及系统菜单入口，因为 **Omarchy 插件管理器不会自动执行本项目的后端安装器**；第三条打开配置面板。
+第一条安装并启用原生面板；第二条安装 Python 后端及系统菜单入口，因为 **Omarchy 插件管理器不会自动执行本项目的后端安装器**；第三条重新加载 Omarchy Shell 的界面代码，第四条打开面板。Shell 重启不关闭应用窗口或 tmux 会话。
 
 如果已经安装过插件，请不要重复执行 `plugin add`，直接查看下方[升级](#升级)。
 
@@ -59,6 +60,7 @@ bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
 git clone https://github.com/CoderLambert/omarchy-workspace-plugin.git
 cd omarchy-workspace-plugin
 bash install.sh
+omarchy restart shell
 ~/.local/bin/omarchy-workspaces gui
 ```
 
@@ -135,7 +137,10 @@ omarchy-workspaces setup --with-shortcuts
 ```bash
 omarchy plugin update lambert.workspaces
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
+omarchy restart shell
 ```
+
+**更新界面后不要省略 Shell 重启。** Omarchy 重扫插件可能仍使用缓存的 QML：提交和后端版本正确，面板也可能显示旧布局。重启 Shell 才会加载新界面。工作区规则刷新由后端安装器负责，是另一件事。参见 [上游缓存问题](https://github.com/omacom/omarchy/issues/9251)。
 
 如果正在试用预览分支，正常执行插件更新可能改变所处的提交，请先确认目标分支。源码 / ZIP 安装则下载新版后运行 `bash install.sh --no-setup`。
 

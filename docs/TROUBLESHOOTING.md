@@ -2,6 +2,25 @@
 
 先保留报错里的路径与完整输出。不要先删除 `apps.toml`、`manifest.json`、`pending.json` 或状态目录；恢复原入口需要其中记录。
 
+## 版本已更新，但面板仍显示旧布局
+
+先核对安装提交、磁盘界面和后端版本：
+
+```bash
+git -C ~/.config/omarchy/plugins/lambert.workspaces log -1 --oneline
+rg -n 'Ui.WorkspaceGroup' ~/.config/omarchy/plugins/lambert.workspaces/Panel.qml
+~/.local/bin/omarchy-workspaces --version
+```
+
+若磁盘代码已经有新版分组界面，而显示仍是旧布局，执行：
+
+```bash
+omarchy restart shell
+~/.local/bin/omarchy-workspaces gui
+```
+
+Omarchy 的重扫/热加载可能继续返回内存缓存中的旧 QML 组件；版本检查读取磁盘后端，不证明当前面板组件已重新编译。参见 [上游报告](https://github.com/omacom/omarchy/issues/9251)。重启 Shell 重新加载界面，不需要卸载插件、修改应用分配或清空配置。工作区规则刷新、Python 后端更新和 QML 界面加载是三个不同环节。
+
 ## 受管文件被其他工具修改
 
 典型错误：

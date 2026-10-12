@@ -47,6 +47,7 @@ omarchy-plugin-validate .
 ```bash
 omarchy plugin add https://github.com/CoderLambert/omarchy-workspace-plugin.git --enable
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
+omarchy restart shell
 ```
 
 官方 `add` 会验证、克隆、登记并按参数启用；不会执行后端安装脚本。也可以在 GitHub 仓库选择 **Code → Download ZIP**，解压后在仓库根目录运行 `bash install.sh`，或下载仓库中的离线安装器。
@@ -64,6 +65,7 @@ bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
 
 ```bash
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
+omarchy restart shell
 ```
 
 再执行 `omarchy-workspaces --version`，重新打开面板。界面与后端版本不一致时，优先完成此步骤。

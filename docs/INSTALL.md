@@ -22,6 +22,7 @@
 ```bash
 omarchy plugin add https://github.com/CoderLambert/omarchy-workspace-plugin.git --enable
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
+omarchy restart shell
 ~/.local/bin/omarchy-workspaces gui
 ```
 
@@ -85,7 +86,7 @@ bash install.sh --no-setup
 
 预期显示 `1.3.0-rc.2`。无需先卸载，不要删除 `apps.toml`、状态目录或恢复记录。安装器自动刷新已启用规则，旧分配继续使用，原“工作区配置”改为优先打开面板。
 
-Git 插件更新后，运行插件目录中的 `install.sh --backend-only` 同步后端并自动刷新已启用规则，不再需要额外运行 apply。未应用的草稿不参与刷新，已有窗口保持原位。即使版本号相同，源码指纹不同也会触发更新提示；可从面板一键更新组件。
+Git 插件更新后，运行插件目录中的 `install.sh --backend-only` 同步后端并自动刷新已启用规则，不再需要额外运行 apply。未应用的草稿不参与刷新，已有窗口保持原位。即使版本号相同，源码指纹不同也会触发更新提示；可从面板一键更新组件。界面代码更新后执行 `omarchy restart shell` 再打开面板；插件重扫可能复用旧 QML，不能仅凭版本号判定界面已更新。
 
 以后升级仍重复运行新版安装器。`--no-setup` 是兼容参数，与 1.3.0-rc.2 默认行为一致；旧版无参数会扫描，新版已经改为显式 `--setup`。
 
@@ -142,6 +143,7 @@ omarchy plugin add https://github.com/CoderLambert/omarchy-workspace-plugin.git 
 
 ```bash
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
+omarchy restart shell
 ```
 
 之后打开 **Omarchy 系统菜单 → 工作区配置**，或运行：

@@ -45,10 +45,11 @@ Install in a terminal **inside your normal Omarchy desktop session**. Do not run
 ```bash
 omarchy plugin add https://github.com/CoderLambert/omarchy-workspace-plugin.git --enable
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
+omarchy restart shell
 ~/.local/bin/omarchy-workspaces gui
 ```
 
-The first command installs and enables the native panel. The second installs the Python backend and the system-menu entry: **Omarchy's plugin manager does not run the backend installer automatically**. The third opens the configuration interface.
+The first command installs and enables the native panel. The second installs the Python backend and the system-menu entry: **Omarchy's plugin manager does not run the backend installer automatically**. The third restarts the Omarchy Shell so it loads the updated QML interface; the fourth opens the configuration interface. This refreshes the desktop shell, not your running application windows or tmux sessions.
 
 Already installed? Skip `omarchy plugin add` and follow [Update](#update) instead.
 
@@ -58,6 +59,7 @@ Already installed? Skip `omarchy plugin add` and follow [Update](#update) instea
 git clone https://github.com/CoderLambert/omarchy-workspace-plugin.git
 cd omarchy-workspace-plugin
 bash install.sh
+omarchy restart shell
 ~/.local/bin/omarchy-workspaces gui
 ```
 
@@ -134,7 +136,10 @@ For a standard Git-installed plugin, update the plugin using Omarchy's update co
 ```bash
 omarchy plugin update lambert.workspaces
 bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
+omarchy restart shell
 ```
+
+**Do not skip the Shell restart after UI updates.** Omarchy plugin rescans can reuse cached QML components: the installed commit and backend version may be current while the panel still shows its old layout. Restarting the Shell loads the new interface. Workspace rule reloads are handled separately by the backend installer. See [the known upstream cache issue](https://github.com/omacom/omarchy/issues/9251).
 
 If you are testing the preview branch, a regular plugin update may change the checked-out revision: review which branch or commit you intend to run. Source/ZIP installs can be upgraded from a fresh source directory using `bash install.sh --no-setup`.
 
