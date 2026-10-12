@@ -11,10 +11,10 @@ f5a5d4eec3317ba69b76c759eeea68cdee5dab5678185af6de0dffe612985acb  ./docs/INSTALL
 e1100d86a610903843bfdb881a5dd465e8c576087a0c2c93599251957e92a20d  ./docs/RELEASE-CHECKLIST.md
 022e98a1574c30169a402689f7b220b6a51b0da44364771f4db8a2266a8bc6c3  ./docs/TROUBLESHOOTING.md
 13dbc2828cfcd355ed38309fffc90f02d50512d06be714f89f4a8818635edcc0  ./docs/USAGE.md
-cab71ad04573bb8fb39757c3d1282edc9849bd26d21ce1e4ce2bf23e6d6575e3  ./docs/变更记录/2026-10-12-rc1-reliability-review.md
+669eae163e01e29aed558526a11dd411e0ecca99d245d00e38e8d103735e09ed  ./docs/变更记录/2026-10-12-rc1-reliability-review.md
 c97ed68f72a04e8a30b1cd5847d48f0f6a349a330e3d484c22152ebf41f05343  ./docs/变更记录/2026-10-12-theme-language-scratchpad.md
 3f5892c39affecbe7987e8340b596ff1f5c1075cf7a7bd37b257340d84870a3b  ./examples/apps.toml
-cae2b1c385be1c2d911de0a3229b65cdb2b3fa2fc6f5eeadc1e1a15793321d71  ./install-omarchy-workspaces.sh
+a97684f9c4190ba4bfdbe285cc62857a656092f9030d0c52b5f8a9f2c59f1595  ./install-omarchy-workspaces.sh
 d730f6d8bfd1e1ddd713257a000b341bdb22c3314a906b4c1b903223baf61416  ./install.sh
 986e519245db5a5c32acc7437b213a3c8e8d475d7f25afec36d9b402f880cb56  ./manifest.json
 3c51de3911cd50ca7c0a3fde8f3789637518956ee204698da194fbc41893450a  ./qml/ActionButton.qml
@@ -45,7 +45,7 @@ aff975f8c97116bc1f0567bc8e530b27da7b6762091c4734c3cc854d7c0e56f6  ./scripts/brid
 aa4c29b9b38fe5ff80ad79ba944408322fdad569d99446e2987617ae24ec37f9  ./scripts/ui_fixture.py
 6f038c6dc39f40c7d3e5d2b2aee4b19da920c79ba379c743e602568761026da4  ./scripts/verify_distribution.py
 1f05c2e10d54608e29f49cafd6203c225e9fdc864f99e78f1f9ab345c97982a1  ./scripts/verify_qml.py
-b818e369b23e2024d59440ffbcb7c737c74cb38da8fd16ee426a6ef7b2a7b32b  ./scripts/verify_ui.py
+1a6a85ba615d7f2022287a5c72fd8795cf4b3b0c7c55b74db802a03af318ec69  ./scripts/verify_ui.py
 59619b05de8ed2b0cac4b2976b43a676fbac3d4c90f194a691aae3686eab96da  ./src/omarchy_workspaces/__init__.py
 dbc746ec9891dcba4b5f246bbe80b5c82fb3aecbc54437949161be34f5947935  ./src/omarchy_workspaces/build.py
 595ce86c44ed14dde31a46ed52b5b8c5a69ba696ca0ba821efbcd8c44907afa1  ./src/omarchy_workspaces/cli.py

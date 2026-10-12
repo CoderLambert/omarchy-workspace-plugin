@@ -28,8 +28,8 @@ try:
     from PySide6.QtQml import QQmlApplicationEngine, QQmlExpression
     from PySide6.QtQuick import QQuickWindow
     from PySide6.QtTest import QTest
-except ImportError:
-    print("Optional dependency missing: install PySide6 in a development environment.", file=sys.stderr)
+except ImportError as exc:
+    print("Qt import failed: " + str(exc) + ". Install PySide6 and its system libraries.", file=sys.stderr)
     raise SystemExit(77)
 
 parser = argparse.ArgumentParser(description=__doc__)
