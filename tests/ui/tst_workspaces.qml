@@ -105,6 +105,28 @@ Item {
             verify(q('JSON.parse(bridge.command[2]).include_special === true'))
             q('busy=false; bridge.running=false; includeSpecial=false; loadEditor("one")')
         }
+        function test_06c_setup_guidance_result_refresh_and_failure() {
+            q('receiveState({installed:true,needsInstall:false,active:false,revision:"setup-fixture",apps:[],issues:[]}); opened=true; setupButton.clicked()'); wait(30)
+            verify(q('confirmation.opened && confirmKind === "setup" && !busy'))
+            verify(q('confirmMessage.indexOf("常用应用") >= 0 && confirmMessage.indexOf("快捷键") >= 0'))
+            grabImage(q('panel.contentItem')).save(Qt.resolvedUrl("setup-guidance.png").toString().replace(/^file:\/\//, ""))
+            q('cancelConfirm.clicked()'); wait(20); verify(q('!busy'))
+            q('setupButton.clicked();acceptConfirmation()');wait(20)
+            verify(q('busy && JSON.parse(bridge.command[2]).action === "setup" && JSON.parse(bridge.command[2]).revision === "setup-fixture"'))
+            q('bridge.running=false;responseText=JSON.stringify({ok:true,message:"预设完成，应用列表已刷新。",state:{installed:true,needsInstall:false,active:true,revision:"updated",apps:[{id:"new-app",name:"New app",workspace:2}],issues:[]}});finish(0)');wait(30)
+            verify(q('opened && !busy && appList.count === 1 && selectedId === "new-app" && confirmKind === "setup-result" && confirmation.opened'))
+            verify(q('!cancelConfirm.visible && acceptConfirm.text === "知道了"'))
+            grabImage(q('panel.contentItem')).save(Qt.resolvedUrl("setup-result.png").toString().replace(/^file:\/\//, ""))
+            q('acceptConfirmation()');wait(20);verify(q('!busy && !confirmation.opened'))
+            q('setLanguage("en");setupButton.clicked()');wait(20)
+            compare(q('confirmTitle'), 'Start auto setup?')
+            compare(q('tr("新增应用：3")'), 'New apps: 3')
+            compare(q('tr("Custom App：保留现有设置")'), 'Custom App: Existing settings preserved')
+            verify(q('confirmMessage.indexOf("Open your usual apps") >= 0'))
+            q('confirmation.close();busy=true;pendingAction="setup";responseText=JSON.stringify({ok:false,message:"external edit",state:{installed:true,needsInstall:false,apps:[],issues:["external edit"]}});finish(1)');wait(20)
+            verify(q('opened && !busy && messageIsError && !confirmation.opened && appList.count === 0'))
+            q('setLanguage("zh")')
+        }
         function test_07_install_gate() {
             q('receiveState({apps:[],issues:[],installed:false,needsInstall:true,pending:true});send({action:"set",app_id:"one"})')
             verify(q('!busy && messageIsError'))

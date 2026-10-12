@@ -115,6 +115,17 @@ def execute(request, manager, source_root):
     if (backend_version(manager.p) != __version__ or not source_build(source_root)
             or backend_build(manager.p) != source_build(source_root)):
         raise Error("插件与后端版本或构建不同，请先点击“安装 / 更新后端”")
+    if action == "setup":
+        from .cli import setup
+        report = io.StringIO()
+        with contextlib.redirect_stdout(report):
+            result = setup(manager, expected_revision=expected(request))
+        heading = "预设完成，应用列表已刷新。" if result["total"] else "未识别到可登记的应用，应用列表已刷新。"
+        lines = [heading, f"新增应用：{result['added']}", f"受管应用：{result['total']}",
+                 f"已整理窗口：{result['arranged']}", "系统快捷键已保留；临时工作区中的窗口未移动。",
+                 "未识别的应用请先打开，再使用“添加应用”。", "", "识别结果："]
+        lines.extend(f"{name}：{status}" for name, status in result["statuses"])
+        return "\n".join(lines)
     if action == "terminal":
         view = request.get("view")
         if view not in ("setup", "add", "advanced", "doctor"):

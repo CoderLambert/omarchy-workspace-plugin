@@ -355,9 +355,11 @@ def review_setup_shortcuts(manager, config, decide=None):
     return config, binding_signature(binds)
 
 
-def setup(manager, with_shortcuts=False):
-    revision = manager.revision()
+def setup(manager, with_shortcuts=False, expected_revision=None):
+    revision = expected_revision if expected_revision is not None else manager.revision()
+    manager.check_revision(revision)
     config = load(manager.p.file) if manager.p.file.exists() else empty_config()
+    previous_apps = set(config["apps"])
     print("正在自动设置：1 AI · 2 开发 · 3 浏览器 · 4 通信", flush=True)
     presets = PRESETS if with_shortcuts else [(*preset[:4], []) for preset in PRESETS]
     config, statuses = discover(manager, config, presets)
@@ -374,12 +376,17 @@ def setup(manager, with_shortcuts=False):
         preview = binding_signature(manager.hypr.query("binds"))
         print("默认不添加预设快捷键；保留已有绑定。需要时运行 setup --with-shortcuts。")
     changes = manager.apply(config, expected_revision=revision, expected_bindings=preview)
-    manager.arrange()
+    try:
+        arranged = manager.arrange()
+    except Error as exc:
+        raise Error(f"配置已保存，但窗口整理失败：{exc}。应用列表已刷新，可稍后重试整理。") from exc
     for name, status in statuses:
         print(f"  {name}：{status}")
     if changes:
         print("已接管对应快捷键；原绑定在撤销设置后恢复。")
     print("完成。以后在 Omarchy 系统菜单打开“工作区配置”即可修改。")
+    return {"added": len(set(config["apps"]) - previous_apps), "total": len(config["apps"]),
+            "arranged": len(arranged), "statuses": statuses}
 
 
 def menu(manager):

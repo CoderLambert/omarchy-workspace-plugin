@@ -159,6 +159,7 @@ Item {
             reset: "正在撤销工作区规则",
             recover: "正在恢复中断任务",
             doctor: "正在检查",
+            setup: "正在识别应用并应用预设，请保持面板打开",
             terminal: "正在打开终端"
         };
         return labels[action] || "正在处理";
@@ -209,6 +210,9 @@ Item {
             receiveState(result.state);
         var success = result.ok === true && exitCode === 0;
         showMessage(result.message || (success ? root.tr("操作完成。") : root.tr("操作未完成，请检查提示后重试。")), !success);
+        if (success && action === "setup") {
+            ask("setup-result", {}, root.tr("自动预设结果"), root.tr(result.message), false);
+        }
         if (success && (action === "terminal" || action === "launch")) {
             // Release the overlay so the newly focused app or terminal is usable.
             dismiss();
@@ -229,6 +233,11 @@ Item {
         } else {
             send(request);
         }
+    }
+
+    function requestSetup() {
+        ask("setup", withRevision({action: "setup"}), root.tr("开始自动预设？"),
+            root.tr("建议先打开常用应用，以便识别窗口。将识别 AI、开发、浏览器与通信应用，补齐工作区分配并整理已登记窗口。部分应用可能短暂启动用于确认身份。\n\n已有应用设置与快捷键会保留；临时工作区中的窗口不会移动。识别不了的应用可随后使用“添加应用”。\n\n执行期间请保持面板打开，完成后会显示结果并自动刷新列表。") + (editorDirty ? "\n\n" + root.tr("当前未保存的编辑会被放弃。") : ""), false);
     }
 
     function saveSelected() {
@@ -268,7 +277,9 @@ Item {
         var kind = confirmKind;
         var request = confirmRequest;
         confirmation.close();
-        if (kind === "discard-select") {
+        if (kind === "setup-result") {
+            return;
+        } else if (kind === "discard-select") {
             loadEditor(request.id);
         } else if (kind === "discard-close") {
             loadEditor(selectedId);
@@ -531,13 +542,11 @@ Item {
                                 })
                             }
                             Ui.ActionButton {
+                                id: setupButton
                                 text: root.tr("自动预设…")
-                                hint: root.tr("在终端识别 AI、开发、浏览器与通信应用；完成后重新打开面板")
+                                hint: root.tr("说明准备步骤，在面板内执行并自动刷新应用列表")
                                 enabled: root.writable
-                                onClicked: root.requestAction({
-                                    action: "terminal",
-                                    view: "setup"
-                                })
+                                onClicked: root.requestSetup()
                             }
                             Ui.ActionButton {
                                 text: root.tr("添加应用…")
@@ -1111,7 +1120,7 @@ Item {
                 padding: Style.space(18)
                 closePolicy: Controls.Popup.NoAutoClose
                 title: root.confirmTitle
-                onOpened: cancelConfirm.forceActiveFocus()
+                onOpened: root.confirmKind === "setup-result" ? acceptConfirm.forceActiveFocus() : cancelConfirm.forceActiveFocus()
                 onClosed: Qt.callLater(function () {
                     if (root.opened)
                         searchField.forceActiveFocus();
@@ -1165,13 +1174,14 @@ Item {
                         }
                         Ui.ActionButton {
                             id: cancelConfirm
+                            visible: root.confirmKind !== "setup-result"
                             text: root.tr("取消")
                             onClicked: confirmation.close()
                             KeyNavigation.backtab: acceptConfirm
                         }
                         Ui.ActionButton {
                             id: acceptConfirm
-                            text: root.confirmDanger ? root.tr("确认撤销") : root.tr("确认继续")
+                            text: root.confirmKind === "setup-result" ? root.tr("知道了") : root.confirmKind === "setup" ? root.tr("开始预设") : root.confirmDanger ? root.tr("确认撤销") : root.tr("确认继续")
                             primary: true
                             danger: root.confirmDanger
                             onClicked: root.acceptConfirmation()

@@ -39,6 +39,27 @@ var english = {
     "操作完成后可以关闭": "You can close this panel when the operation finishes",
     "刷新": "Refresh",
     "自动预设…": "Auto setup…",
+    "正在识别应用并应用预设，请保持面板打开": "Detecting apps and applying presets; keep this panel open",
+    "说明准备步骤，在面板内执行并自动刷新应用列表": "Review preparation steps, run here and refresh the app list automatically",
+    "开始自动预设？": "Start auto setup?",
+    "建议先打开常用应用，以便识别窗口。将识别 AI、开发、浏览器与通信应用，补齐工作区分配并整理已登记窗口。部分应用可能短暂启动用于确认身份。\n\n已有应用设置与快捷键会保留；临时工作区中的窗口不会移动。识别不了的应用可随后使用“添加应用”。\n\n执行期间请保持面板打开，完成后会显示结果并自动刷新列表。": "Open your usual apps first to help identify their windows. Auto setup detects AI, development, browser and communication apps, adds workspace assignments and arranges managed windows. Some apps may briefly launch to confirm their identity.\n\nExisting app settings and shortcuts are preserved; special-workspace windows stay in place. Use Add app later for apps that cannot be detected.\n\nKeep this panel open while setup runs. Results will appear and the app list will refresh automatically.",
+    "当前未保存的编辑会被放弃。": "Unsaved edits will be discarded.",
+    "自动预设结果": "Auto setup results",
+    "开始预设": "Start setup",
+    "知道了": "Got it",
+    "预设完成，应用列表已刷新。": "Setup complete. The app list has refreshed.",
+    "未识别到可登记的应用，应用列表已刷新。": "No apps could be registered. The app list has refreshed.",
+    "新增应用：{0}": "New apps: {0}",
+    "受管应用：{0}": "Managed apps: {0}",
+    "已整理窗口：{0}": "Arranged windows: {0}",
+    "系统快捷键已保留；临时工作区中的窗口未移动。": "System shortcuts are preserved; special-workspace windows stayed in place.",
+    "未识别的应用请先打开，再使用“添加应用”。": "Open undetected apps first, then use Add app.",
+    "识别结果：": "Detection results:",
+    "保留现有设置": "Existing settings preserved",
+    "未找到应用，跳过": "App not found; skipped",
+    "未安装，跳过": "Not installed; skipped",
+    "暂未识别，保留原来的启动方式": "Identity not confirmed; original launch behavior preserved",
+    "工作区 {0}": "Workspace {0}",
     "在终端识别 AI、开发、浏览器与通信应用；完成后重新打开面板": "Identify AI, development, browser and communication apps in a terminal; reopen this panel when done",
     "添加应用…": "Add app…",
     "从桌面应用选择，或通过已有窗口匹配": "Choose a desktop app or match an existing window",
@@ -149,6 +170,13 @@ function translate(language, text) {
         var parts = key.split("{0}");
         if (text.indexOf(parts[0]) === 0 && (!parts[1] || text.slice(text.length - parts[1].length) === parts[1]))
             return english[key].replace("{0}", text.slice(parts[0].length, text.length - parts[1].length));
+    }
+    // Detection reports keep app names intact while translating their status.
+    var separator = text.indexOf("：");
+    if (separator >= 0 && text.indexOf("\n") < 0) {
+        var status = text.slice(separator + 1);
+        var translated = translate(language, status);
+        if (translated !== status) return text.slice(0, separator) + ": " + translated;
     }
     // Reports may contain multiple independent diagnostics.
     if (text.indexOf("\n") >= 0) return text.split("\n").map(function(line) { return translate(language, line); }).join("\n");

@@ -98,6 +98,47 @@ class NativePluginTests(unittest.TestCase):
         self.assertIn('停止覆盖', result.stderr)
         self.assertEqual(self.binary.read_bytes(), before)
 
+    def prepare_setup_fixture(self):
+        from omarchy_workspaces.cli import PRESETS
+        self.c['aliases'] = {preset[0]: 'slack' for preset in PRESETS if preset[0] not in ('terminal', 'slack')}
+        self.config.write_text(dumps(self.c))
+        (self.root / 'system/applications/Alacritty.desktop').write_text('[Desktop Entry]\nType=Application\nName=Alacritty\nExec=alacritty\nStartupWMClass=Alacritty\n')
+        data = json.loads(self.ipc.read_text())
+        data['clients'] = [{'address': '0xa', 'initialClass': 'Alacritty', 'mapped': True, 'workspace': {'id': 7, 'name': '7'}}]
+        data['binds'] = data['original_binds'] = [{'combo': 'SUPER + Return', 'modmask': 64, 'key': 'Return', 'dispatcher': 'exec', 'arg': 'stock-terminal'}]
+        self.ipc.write_text(json.dumps(data))
+
+    def test_gui_setup_registers_apps_returns_refreshed_state_and_repeat_summary(self):
+        self.prepare_setup_fixture()
+        state = self.bridge({'action': 'status'})['state']
+        result = self.bridge({'action': 'setup', 'revision': state['revision']})
+        self.assertIn('新增应用：1', result['message'])
+        self.assertEqual({app['id'] for app in result['state']['apps']}, {'slack', 'terminal'})
+        self.assertTrue(result['state']['active'])
+        data = json.loads(self.ipc.read_text())
+        self.assertNotIn('tui_launches', data)
+        self.assertEqual(data['clients'][0]['workspace']['id'], 2)
+        self.assertEqual(data['binds'], data['original_binds'])
+        repeated = self.bridge({'action': 'setup', 'revision': result['state']['revision']})
+        self.assertIn('新增应用：0', repeated['message'])
+
+    def test_gui_setup_rejects_stale_revision_before_discovery_and_reports_external_drift(self):
+        self.prepare_setup_fixture()
+        state = self.bridge({'action': 'status'})['state']
+        self.config.write_text(self.config.read_text() + '\n# external edit\n')
+        rejected = self.bridge({'action': 'setup', 'revision': state['revision']}, success=False)
+        self.assertIn('刷新', rejected['message'])
+        self.assertNotIn('terminal', load(self.config)['apps'])
+        self.run_cli('apply')
+        target = self.root / 'data/applications/slack.desktop'
+        target.write_text(target.read_text() + '\n# external entry edit\n')
+        before = self.config.read_bytes()
+        state = self.bridge({'action': 'status'})['state']
+        rejected = self.bridge({'action': 'setup', 'revision': state['revision']}, success=False)
+        self.assertIn('被其他工具修改', rejected['message'])
+        self.assertEqual(self.config.read_bytes(), before)
+        self.assertEqual(len(rejected['state']['apps']), 1)
+
     def test_bridge_save_moves_only_selected_app_and_refuses_stale_edit(self):
         self.c['apps']['other'] = {'name': 'Other', 'workspace': 2, 'command': ['other'],
                                    'matches': [{'initial_class': 'Other'}], 'shortcuts': []}
