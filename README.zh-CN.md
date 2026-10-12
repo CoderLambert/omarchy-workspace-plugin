@@ -4,7 +4,7 @@
 
 [English](README.md) | [**简体中文**](README.zh-CN.md)
 
-Omarchy Workspaces 是面向 [Omarchy](https://github.com/basecamp/omarchy) 的原生工作区管理插件。你可以为应用指定默认 Hyprland 工作区，通过受管启动器复用已有窗口，不必手写窗口规则，也不必反复寻找应用。
+Omarchy Workspaces 是面向 [Omarchy](https://github.com/omacom/omarchy) 的原生工作区管理插件。你可以为应用指定默认 Hyprland 工作区，通过受管启动器复用已有窗口，不必手写窗口规则，也不必反复寻找应用。
 
 > **发布状态：** `1.3.0-rc.1`（公开 Beta / RC）。主要适配 Omarchy 4.0.4 与 Hyprland Lua 配置。真实桌面验收尚未全部完成，**尚非稳定版**。
 >
