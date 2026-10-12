@@ -10,6 +10,12 @@ Omarchy Workspaces 是面向 [Omarchy](https://github.com/omacom/omarchy) 的原
 >
 > **新版界面：** 按工作区分组、点击应用再编辑的新版已通过 [PR #1](https://github.com/CoderLambert/omarchy-workspace-plugin/pull/1) 合并到 `main`，无需切换分支即可安装。
 
+## 实际使用截图
+
+![Omarchy Workspaces 实际运行界面：按工作区分组管理应用](preview.png)
+
+*来自真实 Omarchy 桌面，已获截图提供者许可使用。图中的应用分配可自行修改。*
+
 ## 核心功能
 
 | 功能 | 说明 |
