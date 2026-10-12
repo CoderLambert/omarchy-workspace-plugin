@@ -22,7 +22,7 @@ from .plugin import LAUNCHER_MARKER, PLUGIN_ID, directory, refresh_plugin, overl
 def payload_files(root):
     """One explicit file list shared by installation and release packaging."""
     files = []
-    for pattern in ("*.md", "build_*.py", "manifest.json", "LICENSE", "Panel.qml", "install.sh", "uninstall.sh"):
+    for pattern in ("*.md", "build_*.py", "manifest.json", "LICENSE", "Panel.qml", "preview.png", "install.sh", "uninstall.sh"):
         files.extend(root.glob(pattern))
     for folder, pattern in (("src", "*.py"), ("scripts", "*.py"), ("tests", "*.py"),
                             ("qml", "*.qml"), ("qml", "*.js"), ("tests", "*.qml"), ("docs", "*.md"), ("examples", "*.toml"),

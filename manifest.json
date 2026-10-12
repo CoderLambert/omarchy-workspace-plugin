@@ -3,7 +3,7 @@
   "id": "lambert.workspaces",
   "name": "Omarchy Workspaces",
   "version": "1.3.0-rc.1",
-  "description": "配置应用的默认工作区，复用已有窗口，并安全管理快捷键与启动器。",
+  "description": "Assign apps to workspaces, reuse existing windows, and safely manage launch shortcuts.",
   "kinds": [
     "panel"
   ],
@@ -11,5 +11,6 @@
     "panel": "Panel.qml"
   },
   "keepLoaded": true,
-  "license": "GPL-3.0-only"
+  "license": "GPL-3.0-only",
+  "author": "CoderLambert"
 }

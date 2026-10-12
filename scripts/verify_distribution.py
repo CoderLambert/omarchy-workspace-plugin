@@ -23,7 +23,7 @@ with tempfile.TemporaryDirectory(prefix='workspaces-distribution-') as directory
             raise SystemExit('Unsafe checksum path')
         if hashlib.sha256((root / path).read_bytes()).hexdigest() != digest:
             raise SystemExit('Checksum mismatch: ' + name)
-    required = ['LICENSE', 'qml/Strings.js', 'qml/Theme.qml', 'tests/ui/tst_workspaces.qml', 'src/omarchy_workspaces/build.py']
+    required = ['preview.png', 'LICENSE', 'qml/Strings.js', 'qml/Theme.qml', 'tests/ui/tst_workspaces.qml', 'src/omarchy_workspaces/build.py']
     for name in required:
         if not (root / name).is_file():
             raise SystemExit('Missing distribution file: ' + name)

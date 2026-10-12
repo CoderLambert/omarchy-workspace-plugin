@@ -6,9 +6,15 @@
 
 Omarchy Workspaces is a native [Omarchy](https://github.com/omacom/omarchy) plugin for managing where apps open in Hyprland. Assign a preferred workspace to each app, bring an existing window into focus instead of launching another one, and keep your everyday desktop organized without editing window rules by hand.
 
-> **Release status:** `1.3.0-rc.1` (public beta / release candidate). Primary target: Omarchy 4.0.4 with Hyprland's Lua configuration. Real-desktop acceptance is still in progress; this is **not a stable release**.
+> **Release status:** `1.3.0-rc.1` (public beta / release candidate). Primary target: Omarchy 4.0.4 with Hyprland's Lua configuration. The owner has completed real-desktop acceptance of the redesigned panel (2026-10-13). The project has not yet tagged a stable release.
 >
-> **New UI preview:** The simpler workspace-grouped interface is available in [Draft PR #1](https://github.com/CoderLambert/omarchy-workspace-plugin/pull/1), on branch `codex/simplify-workspace-ui`. The default `main` installation does **not** include that redesign yet. See [Try the new interface](#try-the-new-interface) below.
+> **Updated UI:** The workspace-grouped panel is included in `main` following [PR #1](https://github.com/CoderLambert/omarchy-workspace-plugin/pull/1). No special branch checkout is required.
+
+## Screenshot
+
+![Omarchy Workspaces running on Omarchy — workspace assignments grouped by workspace](preview.png)
+
+*Real Omarchy desktop screenshot, shared with the author's permission. App assignments are customizable.*
 
 ## Why use it?
 
@@ -56,23 +62,9 @@ bash install.sh
 
 You can also use **Code → Download ZIP** on GitHub, extract it, and run `bash install.sh` in the directory containing `manifest.json`. This is a user-level installation; the project's own dotfiles are **not** required.
 
-### Try the new interface
+### Updated workspace interface
 
-The redesigned panel groups apps by workspace, opens a focused editor only when an app is selected, and separates **Save** from **Save and move**. For now it lives on the review branch, not `main`.
-
-For an existing installation made with `omarchy plugin add`:
-
-```bash
-PLUGIN="$HOME/.config/omarchy/plugins/lambert.workspaces"
-git -C "$PLUGIN" status --short     # Review and preserve any local modifications
-git -C "$PLUGIN" fetch origin codex/simplify-workspace-ui
-git -C "$PLUGIN" switch --detach FETCH_HEAD
-bash "$PLUGIN/install.sh" --backend-only
-omarchy restart shell
-~/.local/bin/omarchy-workspaces gui
-```
-
-**Stop if the first command reports local changes**; do not discard them. Both the panel and Python backend must come from the same revision, even if the displayed version number matches. See the [UI design and acceptance notes](https://github.com/CoderLambert/omarchy-workspace-plugin/blob/codex/simplify-workspace-ui/docs/UI-SIMPLIFICATION.md) on the preview branch.
+The current `main` includes the redesigned panel: apps grouped by workspace, focused per-app editing, and separate **Save** versus **Save and move** actions. See the [design and verification notes](docs/UI-SIMPLIFICATION.md). If you already have the plugin installed, follow [Update](#update) to synchronize the panel and backend.
 
 ## First-time setup
 
@@ -173,7 +165,7 @@ Disabling or removing only the native UI plugin does **not** undo launcher, work
 
 ## Scope and limitations
 
-Window reuse applies to **managed launch entry points**, not every arbitrary way of starting an application. Multiple existing windows are not merged or closed. Ordinary browser tabs cannot be assigned separate Hyprland workspaces; web apps/PWAs need distinct, trustworthy window identities. Real app compatibility, multi-monitor layouts and the redesigned panel still require desktop acceptance testing.
+Window reuse applies to **managed launch entry points**, not every arbitrary way of starting an application. Multiple existing windows are not merged or closed. Ordinary browser tabs cannot be assigned separate Hyprland workspaces; web apps/PWAs need distinct, trustworthy window identities. Real app compatibility, multi-monitor layouts and other untested combinations may require additional verification.
 
 ## Documentation
 
