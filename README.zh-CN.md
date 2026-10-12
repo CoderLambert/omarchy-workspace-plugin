@@ -10,6 +10,8 @@ Omarchy Workspaces 是面向 [Omarchy](https://github.com/omacom/omarchy) 的原
 >
 > **新版界面：** 按工作区分组、点击应用再编辑的新版已通过 [PR #1](https://github.com/CoderLambert/omarchy-workspace-plugin/pull/1) 合并到 `main`，无需切换分支即可安装。
 
+普通快捷键新建受管窗口时，画面会自动切到它的默认工作区；已有窗口请求激活时也会聚焦。通过受管入口再次唤出应用时，直接聚焦已有窗口；使用 focus 保留窗口当前位置，使用 move 则先移回默认工作区。默认不添加或替换系统快捷键。
+
 ## 实际使用截图
 
 ![Omarchy Workspaces 实际运行界面：按工作区分组管理应用](preview.png)

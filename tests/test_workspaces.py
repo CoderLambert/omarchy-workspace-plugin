@@ -260,6 +260,24 @@ class LaunchTests(Environment):
             launch.assert_not_called()
         self.assertEqual(self.h.focused,['0x2'])
 
+    def test_native_launch_rules_follow_target_workspace_without_changing_keys(self):
+        for backend in ('lua', 'conf', 'v2'):
+            with self.subTest(backend=backend):
+                text, changes = generate(cfg(), backend, '/bin/ows', [])
+                self.assertNotIn('silent', text)
+                self.assertIn('s[false]', text)
+                self.assertEqual(changes, [])
+                if backend == 'lua':
+                    self.assertIn('workspace = "4"', text)
+                    self.assertNotIn('hl.bind(', text)
+                    self.assertIn('focus_on_activate = true', text)
+                elif backend == 'conf':
+                    self.assertIn('workspace = 4\n', text)
+                    self.assertIn('focus_on_activate = true', text)
+                else:
+                    self.assertIn('workspace 4,', text)
+                    self.assertIn('focusonactivate 1,', text)
+
     def test_existing_window_focus_mru_preserves_manual_workspace(self):
         self.m.apply(cfg())
         self.h.clients = [client('0x1', workspace=4, history=5), client('0x2', workspace=7, history=0)]

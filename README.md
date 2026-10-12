@@ -23,6 +23,7 @@ Omarchy Workspaces is a native [Omarchy](https://github.com/omacom/omarchy) plug
 | **Predictable workspaces** | Assign apps to workspaces `1–999`; newly opened managed windows follow their assignments. |
 | **Launch or focus** | Reusing a managed launcher, menu item or opted-in shortcut focuses a matching window when one exists, rather than needlessly starting another instance. |
 | **Your choice of window behavior** | Focus a window **where it is**, or move it back to its preferred workspace before focusing. |
+| **Visible app launches** | Native shortcuts that create a managed window switch to its assigned workspace, so launches do not disappear off-screen. Managed windows can also accept activation requests when already open. |
 | **Scratchpad-aware** | Apps launched while the `Super+S` scratchpad is visible can remain there; ordinary launches follow their configured workspaces. |
 | **Native interface** | A configurable panel follows Omarchy's theme, typography and scaling, with Chinese and English UI. |
 | **Safe configuration** | Preview conflicting shortcuts, preserve existing app assignments, detect externally modified managed files, and restore or disable rules explicitly. |

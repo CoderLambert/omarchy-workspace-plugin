@@ -48,7 +48,7 @@ if tool == 'hyprctl':
     elif args[:1] == ['configerrors']:
         generated = Path(os.environ['XDG_CONFIG_HOME']) / 'hypr/app-workspaces.lua'
         source = generated.read_text() if generated.exists() else ''
-        print('simulated compositor error' if '13 silent' in source else '')
+        print('simulated compositor error' if 'workspace = "13"' in source else '')
     elif args[:1] == ['dispatch']:
         expression = args[1]
         address = re.search(r'address:(0x[0-9a-f]+)', expression).group(1)
@@ -224,7 +224,7 @@ class LuaSyntaxTests(unittest.TestCase):
         source, _ = generate(c,'lua',Path('/a path/ows'),[])
         harness = '''
         hl = { dsp = {} }
-        function hl.window_rule(rule) assert(type(rule.match.initial_class) == 'string'); assert(rule.workspace == '1 silent') end
+        function hl.window_rule(rule) assert(type(rule.match.initial_class) == 'string'); assert(rule.workspace == '1'); assert(rule.focus_on_activate == true) end
         function hl.unbind(key) assert(type(key) == 'string') end
         function hl.dsp.exec_cmd(cmd) assert(type(cmd) == 'string'); return cmd end
         function hl.bind(key, cmd, opts) assert(type(opts.description) == 'string') end
