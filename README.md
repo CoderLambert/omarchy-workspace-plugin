@@ -4,7 +4,7 @@
 
 [**English**](README.md) | [简体中文](README.zh-CN.md)
 
-Omarchy Workspaces is a native [Omarchy](https://github.com/basecamp/omarchy) plugin for managing where apps open in Hyprland. Assign a preferred workspace to each app, bring an existing window into focus instead of launching another one, and keep your everyday desktop organized without editing window rules by hand.
+Omarchy Workspaces is a native [Omarchy](https://github.com/omacom/omarchy) plugin for managing where apps open in Hyprland. Assign a preferred workspace to each app, bring an existing window into focus instead of launching another one, and keep your everyday desktop organized without editing window rules by hand.
 
 > **Release status:** `1.3.0-rc.1` (public beta / release candidate). Primary target: Omarchy 4.0.4 with Hyprland's Lua configuration. Real-desktop acceptance is still in progress; this is **not a stable release**.
 >
