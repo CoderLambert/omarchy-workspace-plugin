@@ -72,7 +72,7 @@ omarchy restart shell
 ~/.local/bin/omarchy-workspaces gui
 ```
 
-**如果第一步显示本地修改，请先停止并检查**，不要强制覆盖。插件界面和 Python 后端必须来自同一源码版本，单凭显示的版本号一致还不够。设计和验收范围见预览分支的[界面简化说明](docs/UI-SIMPLIFICATION.md)。
+**如果第一步显示本地修改，请先停止并检查**，不要强制覆盖。插件界面和 Python 后端必须来自同一源码版本，单凭显示的版本号一致还不够。设计和验收范围见预览分支的[界面简化说明](https://github.com/CoderLambert/omarchy-workspace-plugin/blob/codex/simplify-workspace-ui/docs/UI-SIMPLIFICATION.md)。
 
 ## 首次配置
 
@@ -178,7 +178,7 @@ omarchy-workspaces apply            # 重新应用已保存的分配
 ## 相关文档
 
 - [安装、升级和卸载](docs/INSTALL.md) · [面板、命令行和配置](docs/USAGE.md) · [常见问题](docs/TROUBLESHOOTING.md)
-- [UI 重设计与测试](docs/UI-SIMPLIFICATION.md)（预览分支）
+- [UI 重设计与测试](https://github.com/CoderLambert/omarchy-workspace-plugin/blob/codex/simplify-workspace-ui/docs/UI-SIMPLIFICATION.md)（预览分支）
 - [发布验收清单](docs/RELEASE-CHECKLIST.md) · [变更记录](CHANGELOG.md)
 
 **许可证：**[GPL-3.0-only](LICENSE)。`reference/` 中引用的 Omarchy 代码保留原始许可证，详见[第三方来源说明](reference/SOURCES.md)。
