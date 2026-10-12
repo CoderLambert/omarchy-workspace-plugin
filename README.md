@@ -2,9 +2,11 @@
 
 **公开 Beta / RC1：尚未发布稳定版。** 当前优先验证可靠性，真实桌面验收未全部完成；升级后请同步后端。
 
-把常用应用放到固定工作区，再次打开时直接回到已有窗口；需要临时处理任务时，也能留在 `Super+S` 的 scratchpad 中。
+**2026-10-13 开发分支更新：**面板改为按工作区分组查看、点击应用编辑；默认保存设置不移动现有窗口。本轮界面改版仍需真实桌面验收，设计与验证范围见 [界面简化说明](docs/UI-SIMPLIFICATION.md)。
 
-Omarchy Workspaces 是 Omarchy 的原生「工作区管理」插件（`lambert.workspaces`）。它将应用分配、窗口复用、快捷键和规则恢复集中到一个面板，适合同时使用 AI 工具、编辑器、浏览器和通信应用的人。
+把常用应用放到固定工作区，再次打开时复用已有窗口；需要临时处理任务时，也能留在 `Super+S` 的 scratchpad 中。
+
+Omarchy Workspaces 是 Omarchy 的原生工作区插件（`lambert.workspaces`）。「工作区安排」面板展示应用的默认位置，点击应用即可修改；快捷键、配置检查和规则恢复保留在次级入口。
 
 ## 它解决什么问题
 
@@ -12,19 +14,20 @@ Omarchy Workspaces 是 Omarchy 的原生「工作区管理」插件（`lambert.w
 | --- | --- |
 | 应用散落在多个工作区，找窗口靠逐个切换 | 为每个应用设置默认工作区；再次打开受管入口时聚焦已有窗口 |
 | 快捷键反复打开同一应用，产生多个窗口 | 有匹配窗口时复用；没有时才调用原启动入口，并对重复启动加锁 |
-| 手动把窗口移走后，希望保留位置或自动归位 | 可选“跳到已有窗口”或“先归位，再聚焦” |
+| 手动把窗口移走后，希望保留位置或自动归位 | 可选“直接切换到已有窗口”或“先移回默认工作区，再切换” |
 | 在 scratchpad 打开应用，却被固定规则送到普通工作区 | scratchpad 可见时启动的应用留在其中，继续用 `Super+S` 显示 / 隐藏 |
 | 手写窗口规则和快捷键容易冲突，也难撤回 | 图形配置、检查、变更恢复与撤销入口；检测外部改动后提示处理 |
 | 插件颜色固定，切换主题后风格不一致 | 跟随 Omarchy 的颜色、字体、字号、圆角和边框；支持中文 / English |
 
 ## 功能一览
 
-- **按应用管理工作区**：搜索已登记应用，设置 `1–999` 工作区，查看窗口数量和当前位置。
-- **复用与整理**：聚焦 / 启动应用、保存并整理单个应用、整理全部、取消管理；默认保留 `special:*`，明确勾选后才迁移。
-- **快速配置**：自动预设识别常见应用；也可从已打开的应用登记，自定义程序和 PWA 通过高级配置确认身份。
+- **按工作区查看安排**：按实际工作区编号分组，搜索已登记应用，查看运行状态和偏离默认位置的窗口；宽屏两列，窄屏一列。
+- **点击应用修改**：在独立编辑弹层中选择工作区与复用方式，提供 `1–4` 快选及 `1–999` 编号输入。
+- **保存与移动分开**：默认“保存”只更新设置；勾选“现在也移动已打开的窗口”才执行“保存并移动”。全部整理位于“更多”，需独立确认，默认保留 `special:*`。
+- **快速配置**：“使用推荐分组…”识别常见应用；“添加应用”和“高级设置…”打开终端向导，支持已有窗口、自定义程序和 PWA。
 - **scratchpad 支持**：显示临时工作区时打开的应用留在临时工作区；普通启动仍按默认分配。普通入口再次使用隐藏 scratchpad 中的同一应用时，可归回默认工作区。
-- **原生主题与双语面板**：右上角 `中文 / English` 立即切换并记住选择；宽屏双栏、窄屏纵向滚动；支持搜索、方向键、Tab 和 Esc。
-- **可检查、可恢复**：提供 `doctor`、`recover`、`reset` 和 `apply`，保留规则变更前的恢复信息。
+- **原生主题与双语面板**：通过“更多 → 中文 / English”切换并记住选择；支持搜索、方向键、Tab 和 Esc。
+- **可检查、可恢复**：“更多 → 配置与诊断”展示可复制的完整报告；保留 `doctor`、`recover`、`reset` 和 `apply` 及规则变更前的恢复信息。
 
 Python 后端只在操作时运行，不新增独立常驻服务。安装不会自动识别应用或整理现有窗口；首次分配由你显式执行。
 
@@ -64,7 +67,7 @@ bash install.sh
 
 **快捷键：**自动预设默认不添加插件快捷键，保留 Omarchy 的系统绑定。工作区分配和受管菜单的窗口复用仍可使用。需要用快捷键打开或复用应用时，运行 `omarchy-workspaces setup --with-shortcuts`；每个冲突都会展示原绑定与新命令，明确输入 `yes` 才接管，默认跳过。已有个人快捷键设置继续保留。
 
-**首次使用：**打开 **Omarchy 系统菜单 → 工作区配置**，点“自动预设…”；或先打开某个应用，用“添加应用…”单独登记。自动预设会补齐可识别的应用并整理已登记窗口，部分应用可能通过探测启动确认身份，身份不确定的应用会跳过。
+**首次使用：**打开 **Omarchy 系统菜单 → 工作区配置**，在“更多”中选择“使用推荐分组…”；或先打开某个应用，用“添加应用”单独登记。推荐分组会先说明行为，确认后补齐可识别的应用并整理已登记窗口；部分应用可能通过探测启动确认身份，身份不确定的应用会跳过。
 
 默认预设可自行修改：
 
@@ -75,26 +78,28 @@ bash install.sh
 | 3 | 普通浏览器 |
 | 4 | 通信：WeChat、Slack、X、Discord |
 
+这只是推荐分配，首页按实际工作区编号显示，不会强制将工作区命名为 AI、开发等用途。
+
 ## 五分钟上手
 
-1. 在菜单打开“工作区配置”，点“添加应用…”；先打开目标应用，便于识别它的窗口身份。
-2. 选择左侧应用，设置默认工作区和再次打开时的复用方式。
-3. 点“保存并整理此应用”。该操作同时保存设置，并移动这个应用的现有窗口。
-4. 从其他工作区再次使用受管菜单或快捷键打开应用，检查是否回到已有窗口。
-5. 点右上角 `中文 / English` 选择语言；以后重新打开面板仍保留。
+1. 打开“工作区配置”，通过“添加应用”登记一个应用，或用“更多 → 使用推荐分组…”完成常见应用分配。
+2. 在工作区分组中点击应用，选择打开位置和再次打开时的行为。
+3. 点击“保存”。需要同时移动这个应用的现有窗口时，先勾选“现在也移动已打开的窗口”，再点“保存并移动”；需要统一归位时用“更多 → 整理已打开窗口…”。
+
+从其他工作区再次使用受管菜单或快捷键打开应用，即可检查复用效果。语言切换位于“更多 → 中文 / English”，重新打开面板仍保留选择。
 
 例如 Slack 默认工作区为 4，你把它手动移到 5：
 
 | 选择 | 再次打开时 |
 | --- | --- |
-| 跳到已有窗口（`focus`，默认） | 切到 5，保留窗口当前位置 |
-| 先归位，再聚焦（`move`） | 把窗口移回 4，再切换并聚焦 |
+| 直接切换到已有窗口（`focus`，默认） | 切到 5，保留窗口当前位置 |
+| 先移回默认工作区，再切换（`move`） | 把窗口移回 4，再切换并聚焦 |
 
-“整理全部”和“保存并整理此应用”默认跳过 scratchpad 与其他 `special:*` 工作区。确需迁移它们时勾选“整理时包含临时工作区”，或执行 `omarchy-workspaces arrange --include-special`；可先加 `--dry-run` 查看计划。
+“整理已打开窗口…”会先显示确认；“保存并移动”只整理正在编辑的应用。两者默认跳过 scratchpad 与其他 `special:*` 工作区。确需迁移时，在整理确认框或编辑弹层的“更多应用选项”中勾选“整理时包含临时工作区”；该选择仅用于本次操作，不会成为全局默认。CLI 可执行 `omarchy-workspaces arrange --include-special`，也可先加 `--dry-run` 查看计划。
 
 临时工作区的用法：按 `Super+S` 显示 scratchpad，再启动受管应用；应用留在 scratchpad。再按 `Super+S` 可隐藏或显示。插件保留 Omarchy 原有的 scratchpad 快捷键。
 
-“自动预设…”先显示准备与行为说明，再在面板内执行；完成后显示识别结果并自动刷新应用列表，失败时保留错误提示。“添加应用…”和“高级设置…”仍打开终端；完成后回面板刷新。语言切换覆盖面板与常见操作结果，终端 CLI 及未识别的原始诊断仍保留程序输出语言。
+“使用推荐分组…”在面板内执行，完成后展示识别结果并刷新列表。“添加应用”和“高级设置…”仍打开终端向导；完成后使用“更多 → 重新读取状态”。保存失败会保留编辑字段和原配置版本，避免覆盖其他操作的新修改；查看错误后，可返回并确认放弃修改，再重新读取状态。完整报告在“更多 → 配置与诊断”，支持选择复制。语言切换覆盖面板与常见操作结果，终端 CLI 及未识别的原始诊断保留程序输出语言。
 
 ## 常用命令
 
@@ -115,7 +120,7 @@ omarchy-workspaces arrange --app slack
 omarchy-workspaces arrange --dry-run
 ```
 
-CLI `set --workspace` 只修改分配，现有窗口保持原位；面板“保存并整理此应用”会立即移动现有窗口。
+CLI `set --workspace` 与面板默认“保存”都保留现有窗口位置；立即移动可使用 `arrange --app`，或在面板明确选择“保存并移动”。
 
 ## 更新、配置与撤销
 
@@ -145,24 +150,35 @@ omarchy-workspaces apply     # 重新应用已保存的分配
 
 单独禁用 / 移除 Omarchy 插件只影响界面，不恢复本工具的应用规则。需要撤销规则时先执行 `reset`；独立安装的完整卸载使用 `omarchy-workspaces uninstall`。这些操作不关闭应用，也不会把已移动的窗口搬回原位置。发现外部修改时先查看 `doctor`，确认后再决定是否使用 `apply --adopt`。
 
+面板对应入口为“更多 → 停用全部规则…”；恢复启用可执行 `omarchy-workspaces apply`。首页提示有尚未生效的配置时，也可使用“应用配置”。外部修改的检查与明确接纳位于“更多 → 配置与诊断”。
+
 ## 适用范围
 
 窗口复用针对受管菜单、启动器和快捷键；其他程序直接运行原应用命令时，行为由应用自身决定。普通浏览器标签页不能独立分配工作区；PWA 必须有可信的独立窗口身份。多个窗口不会自动合并或关闭。
 
-这次更新已在本机 Omarchy 桌面加载，主题和双语 UI 有隔离测试。其他实体机器、所有第三方应用、所有主题和多显示器组合尚未全部实测；详见仓库 [本次交付验证记录](docs/变更记录/2026-10-12-theme-language-scratchpad.md)。
+本轮界面改版的验证范围与结果见 [界面简化说明](docs/UI-SIMPLIFICATION.md)。Qt 离屏和适配器验证不等于用户真实 Omarchy 桌面验收，不能据此宣布 Stable；第三方应用、主题、缩放和多显示器组合仍需实际验证。此前主题与 scratchpad 更新的记录保留在 [2026-10-12 交付记录](docs/变更记录/2026-10-12-theme-language-scratchpad.md)。
 
 ## English quick start
 
 Omarchy Workspaces assigns apps to default workspaces, reuses existing windows, and respects the `Super+S` scratchpad. The native panel follows your Omarchy theme and offers persistent Chinese / English settings.
 
-On Omarchy 4.0.4 with Python 3.11+, install from `https://github.com/CoderLambert/omarchy-workspace-plugin.git` with the Omarchy plugin manager, then run `bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only`. Alternatively, clone this repository and run `bash install.sh` from its root. Then open **Omarchy menu → 工作区配置**, or run `~/.local/bin/omarchy-workspaces gui`. Installation preserves app assignments; choose **Auto setup…** or **Add app…** to configure them. Switch to English using the button at the top right.
+On Omarchy 4.0.4 with Python 3.11+, install from `https://github.com/CoderLambert/omarchy-workspace-plugin.git` with the Omarchy plugin manager, then run `bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only`. Alternatively, clone this repository and run `bash install.sh` from its root. Then open **Omarchy menu → 工作区配置**, or run `~/.local/bin/omarchy-workspaces gui`. Installation preserves app assignments. Switch to English under **更多 (More) → 中文 / English**.
 
-Choose **Focus existing window** to keep its current position, or **Move, then focus** to return it to the assigned workspace. **Save and arrange app** immediately moves that app’s existing windows. Use `reset` to remove routing rules while keeping assignments, and `apply` to restore them. Terminal commands and raw diagnostics retain their original language.
+1. Choose **Add app**, or **More → Use recommended groups…**. Add app opens a terminal wizard; recommended groups show their behavior before running in the panel.
+2. Select an app in its workspace group. Choose its workspace with the 1–4 shortcuts or the 1–999 number field, then select **Switch to an existing window** or **Move to the default workspace, then switch**.
+3. Select **Save** to keep existing windows in place. To move this app’s windows now, check **Also move existing windows now** and select **Save and move**. **More → Arrange open windows…** is a separate action with its own confirmation.
+
+Groups use actual workspace numbers, with two columns on wide screens and one on narrow screens. Arrangement protects special workspaces unless explicitly included for that operation. Failed saves preserve edits and the original configuration revision; discard explicitly and reload before using an updated configuration.
+
+Full, selectable reports are under **More → Settings and diagnostics**. Advanced settings also use a terminal wizard; reload status when finished. **More → Disable all rules…** or `reset` removes routing rules while keeping assignments; `apply` restores them. Terminal commands and raw diagnostics retain their original language.
+
+This UI update is on a development branch and remains a release candidate. Qt offscreen checks do not replace real Omarchy desktop acceptance. See [UI simplification and verification](docs/UI-SIMPLIFICATION.md) for scope and results.
 
 ## 进一步阅读
 
 - [安装、升级与卸载](docs/INSTALL.md)
 - [面板、CLI 与配置文件](docs/USAGE.md)
+- [界面简化设计与验证范围](docs/UI-SIMPLIFICATION.md)
 - [重复启动、外部修改、PWA 与恢复](docs/TROUBLESHOOTING.md)
 - [独立插件发布](docs/PUBLISHING.md)
 - [实现说明](IMPLEMENTATION.md)

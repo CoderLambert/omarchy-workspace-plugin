@@ -43,6 +43,7 @@ Button {
     }
 
     ToolTip {
+        implicitWidth: Math.min(Style.space(340), contentItem.implicitWidth + leftPadding + rightPadding)
         visible: control.hovered && control.hint !== ""
         delay: 650
         text: control.hint
@@ -54,6 +55,7 @@ Button {
         }
         contentItem: Text {
             text: control.hint
+            wrapMode: Text.WordWrap
             color: Color.tooltip.text
             font.family: theme.family
             font.pixelSize: Style.font.bodySmall
