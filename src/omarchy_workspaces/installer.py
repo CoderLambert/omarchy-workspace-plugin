@@ -122,7 +122,7 @@ def install(root, *, cli_only=False, backend_only=False):
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
             for path in files:
                 relative = path.relative_to(root)
-                if relative.suffix == ".md" and (len(relative.parts) == 1 or relative.parts[0] == "docs"):
+                if relative == Path("LICENSE") or (relative.suffix == ".md" and (len(relative.parts) == 1 or relative.parts[0] == "docs")):
                     target = staged_runtime / relative
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(path, target)

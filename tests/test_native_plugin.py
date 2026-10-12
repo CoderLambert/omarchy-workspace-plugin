@@ -262,3 +262,7 @@ class NativePluginTests(unittest.TestCase):
         state = self.bridge({'action': 'status'})['state']
         self.assertTrue(state['needsInstall'])
         self.assertNotEqual(state['backendBuildId'], state['buildId'])
+
+    def test_installed_backend_includes_the_product_license(self):
+        installed = self.root / 'data/omarchy-workspaces/LICENSE'
+        self.assertEqual(installed.read_bytes(), (self.package / 'LICENSE').read_bytes())

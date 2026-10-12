@@ -92,3 +92,14 @@ class ShortcutPreviewTests(Environment):
         later = [{'modmask': 64, 'key': 'C', 'dispatcher': 'exec', 'arg': 'new-foreign-binding'}]
         with self.assertRaisesRegex(Error, '已绑定'):
             generate(candidate, 'lua', self.p.binary, later)
+
+    def test_repeated_setup_keeps_explicit_grants_for_reset_and_reapply(self):
+        with redirect_stdout(io.StringIO()):
+            candidate, signature = review_setup_shortcuts(self.m, self.c, lambda key, *args: key == 'SUPER + A')
+        self.m.apply(candidate, expected_bindings=signature)
+        with redirect_stdout(io.StringIO()):
+            repeated, signature = review_setup_shortcuts(self.m, self.m.applied_config(), lambda *args: self.fail('Owned binding should not prompt'))
+        self.assertEqual(repeated['apps']['slack']['replace_shortcut_keys'], ['SUPER + A'])
+        self.m.uninstall()
+        self.m.apply(repeated)
+        self.assertEqual(self.m.applied_config()['apps']['slack']['replace_shortcut_keys'], ['SUPER + A'])

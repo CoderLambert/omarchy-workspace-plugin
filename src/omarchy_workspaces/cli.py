@@ -329,6 +329,7 @@ def review_setup_shortcuts(manager, config, decide=None):
     binds = manager.hypr.query("binds")
     for app_id, app in config["apps"].items():
         kept = []
+        previously_approved = {key_identity(k) for k in app.get("replace_shortcut_keys", [])}
         app["replace_shortcuts"] = False
         app["replace_shortcut_keys"] = []
         for key in app.get("shortcuts", []):
@@ -346,6 +347,8 @@ def review_setup_shortcuts(manager, config, decide=None):
                 if not accept:
                     print("  已跳过冲突快捷键，仍登记应用和工作区。")
                     continue
+                app["replace_shortcut_keys"].append(key)
+            elif key_identity(key) in previously_approved:
                 app["replace_shortcut_keys"].append(key)
             kept.append(key)
         app["shortcuts"] = kept
