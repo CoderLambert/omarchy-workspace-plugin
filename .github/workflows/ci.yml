@@ -1,0 +1,61 @@
+name: test and build release candidates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: sudo apt-get update && sudo apt-get install -y liblua5.4-0 jq
+      - name: Python and installer regression tests
+        env:
+          PYTHONPATH: src
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -W error::ResourceWarning -m unittest discover -s tests -v
+      - run: bash -n install.sh uninstall.sh install-omarchy-workspaces.sh
+      - run: bash reference/bin_omarchy-plugin-validate .
+      - run: sha256sum -c SHA256SUMS
+
+  ui-and-packages:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: sudo apt-get update && sudo apt-get install -y fonts-noto-cjk
+      - run: python -m pip install PySide6-Essentials==6.8.3
+      - name: Theme, language and interaction checks
+        run: |
+          python scripts/verify_ui.py --theme dark --output "${RUNNER_TEMP}/workspaces-ui-dark"
+          python scripts/verify_ui.py --theme light --output "${RUNNER_TEMP}/workspaces-ui-light"
+      - name: Build and verify distribution
+        run: |
+          mkdir -p "${RUNNER_TEMP}/workspaces-artifacts"
+          python -B build_release.py "${RUNNER_TEMP}/workspaces-artifacts/install-omarchy-workspaces.sh"
+          python -B build_source.py "${RUNNER_TEMP}/workspaces-artifacts/omarchy-workspaces.zip"
+          python -B scripts/verify_distribution.py "${RUNNER_TEMP}/workspaces-artifacts/omarchy-workspaces.zip"
+          cd "${RUNNER_TEMP}/workspaces-artifacts"
+          sha256sum install-omarchy-workspaces.sh omarchy-workspaces.zip > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workspaces-ui-and-packages
+          path: |
+            ${{ runner.temp }}/workspaces-ui-dark
+            ${{ runner.temp }}/workspaces-ui-light
+            ${{ runner.temp }}/workspaces-artifacts

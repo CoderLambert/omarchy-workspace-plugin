@@ -61,6 +61,7 @@ Item {
     property bool processStarted: false
     property string lastMessage: ""
     property bool messageIsError: false
+    property bool includeSpecial: false
     property string selectedId: ""
     property int editorWorkspace: 1
     property string editorBehavior: "focus"
@@ -247,7 +248,8 @@ Item {
             app_id: selectedId,
             workspace: value,
             existing_window: editorBehavior,
-            move_existing: true
+            move_existing: true,
+            include_special: root.includeSpecial
         }));
     }
 
@@ -567,9 +569,21 @@ Item {
                                 hint: root.tr("把所有受管应用的已有窗口移到各自目标工作区")
                                 enabled: root.writable && root.apps.length > 0
                                 onClicked: root.requestAction({
-                                    action: "arrange"
+                                    action: "arrange",
+                                    include_special: root.includeSpecial
                                 })
                             }
+                        }
+
+                        Controls.CheckBox {
+                            id: includeSpecialChoice
+                            text: root.tr("整理时包含临时工作区")
+                            checked: root.includeSpecial
+                            enabled: root.writable
+                            font.family: theme.family
+                            font.pixelSize: Style.font.body
+                            onToggled: root.includeSpecial = checked
+                            Accessible.description: root.tr("默认保护 scratchpad 和其他特殊工作区；勾选后保存或整理才会迁移这些窗口。")
                         }
 
                         Rectangle {
@@ -1002,7 +1016,7 @@ Item {
                                             }
                                             Text {
                                                 Layout.fillWidth: true
-                                                text: root.tr("插件 ") + String(root.snapshot.version || "1.2.0") + (root.snapshot.backendVersion ? root.tr(" · 组件 ") + root.snapshot.backendVersion : "")
+                                                text: root.tr("插件 ") + String(root.snapshot.version || "1.3.0-rc.1") + (root.snapshot.backendVersion ? root.tr(" · 组件 ") + root.snapshot.backendVersion : "")
                                                 textFormat: Text.PlainText
                                                 color: root.muted
                                                 font.family: theme.family

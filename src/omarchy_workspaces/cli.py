@@ -10,9 +10,9 @@ import time
 from pathlib import Path
 
 from . import __version__
-from .core import Error, Paths, atomic, dumps, empty_config, load, owner, validate
+from .core import binding_shortcut, key_identity, Error, Paths, atomic, dumps, empty_config, load, owner, validate
 from .desktop import parse
-from .hypr import detect, generate
+from .hypr import detect, generate, binding_owned, binding_signature
 from .manager import BEGIN, END, Manager
 from .discover import discover
 from .menu import check as check_menu, register as register_menu, unregister as unregister_menu
@@ -102,7 +102,8 @@ def register(manager, config, app_id=None, preset=None):
         if choice == "1":
             app = config["apps"]["chatgpt_app"]
             app["shortcuts"] = list(dict.fromkeys(app.get("shortcuts", []) + shortcuts))
-            app["replace_shortcuts"] = True
+            app["replace_shortcuts"] = False
+            app.setdefault("replace_shortcut_keys", [])
             config["aliases"][app_id] = "chatgpt_app"
             return
         if choice == "q":
@@ -115,7 +116,7 @@ def register(manager, config, app_id=None, preset=None):
     kind = prompt("入口类型", default)
     if kind == "q":
         return
-    app = {"name": name, "workspace": workspace, "shortcuts": shortcuts, "replace_shortcuts": bool(shortcuts)}
+    app = {"name": name, "workspace": workspace, "shortcuts": shortcuts, "replace_shortcuts": False}
     if kind == "4" and app_id == "tmux":
         if not shutil.which("omarchy-launch-tui") or not shutil.which("tmux"):
             raise Error("缺少 omarchy-launch-tui 或 tmux")
@@ -298,6 +299,7 @@ def advanced_menu(manager):
                     app["workspace"] = number("工作区", app["workspace"])
                 elif action == "3":
                     value = prompt("快捷键（多个用逗号分隔，- 清空）", ",".join(app.get("shortcuts", [])))
+                    app.pop("replace_shortcut_keys", None)
                     app["shortcuts"] = [] if value == "-" else [s.strip() for s in value.split(",") if s.strip()]
                     app["replace_shortcuts"] = prompt("若与原绑定冲突，是否接管（yes/no）", "no") == "yes"
                 elif action == "4":
@@ -321,12 +323,42 @@ def advanced_menu(manager):
             print(f"操作失败：{exc}")
 
 
+def review_setup_shortcuts(manager, config, decide=None):
+    """Preview every foreign binding; skip it unless explicitly accepted."""
+    config = copy.deepcopy(config)
+    binds = manager.hypr.query("binds")
+    for app_id, app in config["apps"].items():
+        kept = []
+        app["replace_shortcuts"] = False
+        app["replace_shortcut_keys"] = []
+        for key in app.get("shortcuts", []):
+            existing = [b for b in binds if binding_shortcut(b)
+                        and key_identity(binding_shortcut(b)) == key_identity(key)
+                        and not binding_owned(b, manager.p.binary, app_id, app)]
+            if existing:
+                print(f"\n快捷键冲突 {key}：")
+                for b in existing:
+                    print(f"  原绑定：{b.get('description') or '(无说明)'} | {b.get('dispatcher')} {b.get('arg', '')}")
+                print(f"  新绑定：{manager.p.binary} launch {app_id}")
+                accept = decide(key, app_id, existing) if decide else (
+                    sys.stdin.isatty() and sys.stdout.isatty()
+                    and prompt("明确替换该快捷键？yes/no（no 仅跳过此快捷键）", "no") == "yes")
+                if not accept:
+                    print("  已跳过冲突快捷键，仍登记应用和工作区。")
+                    continue
+                app["replace_shortcut_keys"].append(key)
+            kept.append(key)
+        app["shortcuts"] = kept
+    return config, binding_signature(binds)
+
+
 def setup(manager):
     revision = manager.revision()
     config = load(manager.p.file) if manager.p.file.exists() else empty_config()
     print("正在自动设置：1 AI · 2 开发 · 3 浏览器 · 4 通信", flush=True)
     config, statuses = discover(manager, config, PRESETS)
-    changes = manager.apply(config, expected_revision=revision)
+    config, preview = review_setup_shortcuts(manager, config)
+    changes = manager.apply(config, expected_revision=revision, expected_bindings=preview)
     manager.arrange()
     for name, status in statuses:
         print(f"  {name}：{status}")
@@ -448,6 +480,7 @@ def parser():
     sub = commands.add_parser("arrange")
     sub.add_argument("--dry-run", action="store_true")
     sub.add_argument("--app", help="只整理指定应用")
+    sub.add_argument("--include-special", action="store_true", help="明确允许整理 special:* 临时工作区的窗口")
     sub = commands.add_parser("status")
     sub.add_argument("--json", action="store_true", help="输出插件使用的结构化状态")
     sub = commands.add_parser("launch")
@@ -514,7 +547,7 @@ def main(argv=None):
                 app_id = config['aliases'].get(app_id, app_id)
                 if app_id not in config['apps']:
                     raise Error(f'应用未登记：{app_id}')
-            print("\n".join(manager.arrange(args.dry_run, app_id=app_id)))
+            print("\n".join(manager.arrange(args.dry_run, app_id=app_id, include_special=args.include_special)))
         elif args.action == "reset":
             manager.uninstall(expected_revision=manager.revision())
             print("已撤销工作区规则与应用入口接管；保留插件、命令和分配表，执行 apply 可恢复管理。")
@@ -559,9 +592,11 @@ def main(argv=None):
                 if args.existing_window:
                     app["existing_window"] = args.existing_window
                 if args.shortcut is not None:
+                    app.pop("replace_shortcut_keys", None)
                     app["shortcuts"] = args.shortcut
                     app["replace_shortcuts"] = args.replace_shortcut
                 elif args.clear_shortcuts:
+                    app.pop("replace_shortcut_keys", None)
                     app["shortcuts"] = []
             text = p.file.read_text() if args.action == "apply" and p.file.exists() else None
             apply(manager, config, getattr(args, "adopt", False), text, expected_revision=revision)

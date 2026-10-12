@@ -218,3 +218,47 @@ class NativePluginTests(unittest.TestCase):
         self.run_cli('apply')
         self.run_cli('arrange', '--app', 'missing', success=False)
         self.run_cli('arrange', '--app', 'slack', '--dry-run')
+
+    def test_same_version_different_code_blocks_mutation_and_repairs_in_one_step(self):
+        original = self.config.read_bytes()
+        backend = self.root / 'data/omarchy-workspaces/omarchy_workspaces/manager.py'
+        backend.write_text(backend.read_text() + '\n# same-version stale backend\n')
+        state = self.bridge({'action': 'status'})['state']
+        self.assertEqual(state['backendVersion'], __version__)
+        self.assertNotEqual(state['buildId'], state['backendBuildId'])
+        self.assertTrue(state['needsInstall'])
+        for action in ['reset', 'set', 'arrange']:
+            self.bridge({'action': action, 'revision': state['revision']}, success=False)
+        self.assertEqual(self.config.read_bytes(), original)
+        repaired = self.bridge({'action': 'install'})['state']
+        self.assertFalse(repaired['needsInstall'])
+        self.assertEqual(repaired['buildId'], repaired['backendBuildId'])
+        self.assertEqual(self.config.read_bytes(), original)
+
+    def test_standalone_installed_status_compares_plugin_and_runtime_build(self):
+        result = self.run_cli('status', '--json')
+        state = json.loads(result.stdout)
+        self.assertFalse(state['needsInstall'])
+        self.assertEqual(state['buildId'], state['backendBuildId'])
+
+    def test_special_arrange_flag_requires_boolean_before_saving(self):
+        self.run_cli('apply')
+        state = self.bridge({'action': 'status'})['state']
+        original = self.config.read_bytes()
+        self.bridge({'action': 'set', 'app_id': 'slack', 'workspace': 5,
+                     'existing_window': 'focus', 'revision': state['revision'],
+                     'include_special': 'yes'}, success=False)
+        self.assertEqual(self.config.read_bytes(), original)
+
+    def test_forged_install_metadata_does_not_hide_stale_backend(self):
+        state = self.bridge({'action': 'status'})['state']
+        metadata = self.root / 'data/omarchy-workspaces/installation.json'
+        record = json.loads(metadata.read_text())
+        record['version'] = __version__
+        record['buildId'] = state['buildId']
+        metadata.write_text(json.dumps(record))
+        backend = self.root / 'data/omarchy-workspaces/omarchy_workspaces/manager.py'
+        backend.write_text(backend.read_text() + '\n# changed executable backend\n')
+        state = self.bridge({'action': 'status'})['state']
+        self.assertTrue(state['needsInstall'])
+        self.assertNotEqual(state['backendBuildId'], state['buildId'])

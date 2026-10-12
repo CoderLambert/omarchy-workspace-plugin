@@ -136,7 +136,7 @@ def validate(config):
     for app_id, app in apps.items():
         if not ID.fullmatch(app_id) or not isinstance(app, dict):
             raise Error(f"无效应用 ID：{app_id}")
-        if set(app) - {"name", "workspace", "desktop", "command", "matches", "shortcuts", "existing_window", "replace_shortcuts", "menu", "icon"}:
+        if set(app) - {"name", "workspace", "desktop", "command", "matches", "shortcuts", "existing_window", "replace_shortcuts", "replace_shortcut_keys", "menu", "icon"}:
             raise Error(f"{app_id} 存在不支持的字段")
         if type(app.get("workspace")) is not int or not 1 <= app["workspace"] <= 999:
             raise Error(f"{app_id} workspace 必须是 1–999 的整数")
@@ -176,6 +176,13 @@ def validate(config):
         if not isinstance(shortcuts, list):
             raise Error(f"{app_id} shortcuts 必须是数组")
         app["shortcuts"] = [shortcut(s) for s in shortcuts]
+        if "replace_shortcut_keys" in app:
+            permitted = app["replace_shortcut_keys"]
+            if not isinstance(permitted, list):
+                raise Error(f"{app_id} replace_shortcut_keys 必须是数组")
+            app["replace_shortcut_keys"] = [shortcut(s) for s in permitted]
+            if any(key_identity(s) not in {key_identity(k) for k in app["shortcuts"]} for s in app["replace_shortcut_keys"]):
+                raise Error(f"{app_id} 只能授权已配置的快捷键")
         for key in app["shortcuts"]:
             identity = key_identity(key)
             if identity in keys:

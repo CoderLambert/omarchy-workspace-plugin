@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 from . import __version__
+from .build import source_build
 from .core import Error, Paths, atomic, lock
 from .desktop import exec_line
 from .manager import restore, snapshot
@@ -21,7 +22,7 @@ from .plugin import LAUNCHER_MARKER, PLUGIN_ID, directory, refresh_plugin, overl
 def payload_files(root):
     """One explicit file list shared by installation and release packaging."""
     files = []
-    for pattern in ("*.md", "build_*.py", "manifest.json", "Panel.qml", "install.sh", "uninstall.sh"):
+    for pattern in ("*.md", "build_*.py", "manifest.json", "LICENSE", "Panel.qml", "install.sh", "uninstall.sh"):
         files.extend(root.glob(pattern))
     for folder, pattern in (("src", "*.py"), ("scripts", "*.py"), ("tests", "*.py"),
                             ("qml", "*.qml"), ("qml", "*.js"), ("tests", "*.qml"), ("docs", "*.md"), ("examples", "*.toml"),
@@ -125,7 +126,7 @@ def install(root, *, cli_only=False, backend_only=False):
                     target = staged_runtime / relative
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(path, target)
-            (staged_runtime / "installation.json").write_text(json.dumps({"version": __version__, "plugin_id": PLUGIN_ID,
+            (staged_runtime / "installation.json").write_text(json.dumps({"version": __version__, "buildId": source_build(root), "plugin_id": PLUGIN_ID,
                                                                         "plugin_path": str(plugin)}, indent=2))
             if install_plugin and not same_plugin:
                 plugin.parent.mkdir(parents=True, exist_ok=True)

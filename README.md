@@ -1,4 +1,6 @@
-# Omarchy Workspaces
+# Omarchy Workspaces · 1.3.0-rc.1
+
+**公开 Beta / RC1：尚未发布稳定版。** 当前优先验证可靠性，真实桌面验收未全部完成；升级后请同步后端。
 
 把常用应用放到固定工作区，再次打开时直接回到已有窗口；需要临时处理任务时，也能留在 `Super+S` 的 scratchpad 中。
 
@@ -18,7 +20,7 @@ Omarchy Workspaces 是 Omarchy 的原生「工作区管理」插件（`lambert.w
 ## 功能一览
 
 - **按应用管理工作区**：搜索已登记应用，设置 `1–999` 工作区，查看窗口数量和当前位置。
-- **复用与整理**：聚焦 / 启动应用、保存并整理单个应用、整理全部、取消管理。
+- **复用与整理**：聚焦 / 启动应用、保存并整理单个应用、整理全部、取消管理；默认保留 `special:*`，明确勾选后才迁移。
 - **快速配置**：自动预设识别常见应用；也可从已打开的应用登记，自定义程序和 PWA 通过高级配置确认身份。
 - **scratchpad 支持**：显示临时工作区时打开的应用留在临时工作区；普通启动仍按默认分配。普通入口再次使用隐藏 scratchpad 中的同一应用时，可归回默认工作区。
 - **原生主题与双语面板**：右上角 `中文 / English` 立即切换并记住选择；宽屏双栏、窄屏纵向滚动；支持搜索、方向键、Tab 和 Esc。
@@ -58,6 +60,10 @@ bash install.sh
 `install-omarchy-workspaces.sh` 单文件离线安装器，尚未发布独立 GitHub Release
 附件或插件市场条目；完整安装方式见 [安装说明](docs/INSTALL.md)。
 
+**前后端一致性：**面板比较版本与后端 Python 源码指纹；即使版本字符串相同、代码不同也会阻止修改。点击“更新组件”会同步后端并保留应用分配。
+
+**快捷键：**自动预设先展示冲突的原绑定和新命令。默认仅跳过冲突快捷键，仍登记应用；每个冲突需明确输入 `yes` 才接管。非交互运行默认跳过冲突项。确认后若绑定变化，本次应用中止并要求重新预览。
+
 **首次使用：**打开 **Omarchy 系统菜单 → 工作区配置**，点“自动预设…”；或先打开某个应用，用“添加应用…”单独登记。自动预设会补齐可识别的应用并整理已登记窗口，部分应用可能通过探测启动确认身份，身份不确定的应用会跳过。
 
 默认预设可自行修改：
@@ -83,6 +89,8 @@ bash install.sh
 | --- | --- |
 | 跳到已有窗口（`focus`，默认） | 切到 5，保留窗口当前位置 |
 | 先归位，再聚焦（`move`） | 把窗口移回 4，再切换并聚焦 |
+
+“整理全部”和“保存并整理此应用”默认跳过 scratchpad 与其他 `special:*` 工作区。确需迁移它们时勾选“整理时包含临时工作区”，或执行 `omarchy-workspaces arrange --include-special`；可先加 `--dry-run` 查看计划。
 
 临时工作区的用法：按 `Super+S` 显示 scratchpad，再启动受管应用；应用留在 scratchpad。再按 `Super+S` 可隐藏或显示。插件保留 Omarchy 原有的 scratchpad 快捷键。
 
@@ -161,3 +169,20 @@ Choose **Focus existing window** to keep its current position, or **Move, then f
 - [更新记录](CHANGELOG.md)
 
 开发验证：`python3 scripts/verify_qml.py`（需 Qt 6 QtTest），后端测试见项目测试目录。
+
+## 兼容性与发布状态
+
+| 项目 | 当前要求 / 验证范围 |
+| --- | --- |
+| 桌面 | 主要测试目标为 Omarchy 4.0.4；原生面板依赖该版本的 qs.Commons / qs.Ui |
+| Hyprland | 主要目标为 Lua API 的 0.55+；旧后端仍保留，但未完成真实桌面兼容验收 |
+| Python | 后端最低 3.11；CI 测试 3.11 / 3.13 |
+| Qt | 面板的 QtCore.Settings 需要 Qt 6.5+，推荐 Omarchy 自带的 Quickshell |
+| 本版 | 1.3.0-rc.1，公开 Beta 候选；不是稳定版 |
+
+PR / main 的 CI 自动测试、验证离线包并保存 UI 报告及构建产物。是否发布稳定版以
+[真实桌面验收清单](docs/RELEASE-CHECKLIST.md)为准，尤其需要复测 Grok Bot 的重复启动和 desktop 外部修改。未创建 Stable Release，也没有把适配器结果记成真实桌面验收。
+
+## 许可证
+
+原创代码与文档采用 [GPL-3.0-only](LICENSE)。`reference/` 中引用的 Omarchy 代码继续使用其原许可证，来源及第三方许可见 [reference/SOURCES.md](reference/SOURCES.md) 和 [reference/omarchy-LICENSE](reference/omarchy-LICENSE)。

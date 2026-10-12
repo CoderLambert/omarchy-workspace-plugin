@@ -156,7 +156,7 @@ def discover(manager, config, presets, preferred_browser=None):
             preferred = browser if app_id == "browser" else terminal if app_id == "terminal" else ""
             candidates = sorted([(score_entry(app_id, e, preferred), e) for e in entries if score_entry(app_id, e, preferred)], key=lambda x: x[0], reverse=True)
             entry = candidates[0][1] if candidates and (len(candidates) == 1 or candidates[0][0] > candidates[1][0]) else None
-            app = {"name": name, "workspace": workspace, "shortcuts": shortcuts, "replace_shortcuts": bool(shortcuts)}
+            app = {"name": name, "workspace": workspace, "shortcuts": shortcuts, "replace_shortcuts": False}
             if app_id == "tmux":
                 if not shutil.which("tmux") or not shutil.which("omarchy-launch-tui"):
                     statuses.append((name, "未安装，跳过"))
@@ -195,7 +195,7 @@ def discover(manager, config, presets, preferred_browser=None):
             if used:
                 config["aliases"][app_id] = used
                 config["apps"][used]["shortcuts"] = list(dict.fromkeys(config["apps"][used].get("shortcuts", []) + shortcuts))
-                config["apps"][used]["replace_shortcuts"] = True
+                config["apps"][used].setdefault("replace_shortcuts", False)
             else:
                 config["apps"][app_id] = app
             validate(config)

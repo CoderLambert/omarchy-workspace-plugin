@@ -30,6 +30,7 @@ class DiscoveryTests(Environment):
         result,status = discover(self.m,empty_config(),[next(p for p in PRESETS if p[0]=='terminal')],preferred_browser='')
         self.assertEqual(result['apps']['terminal']['desktop'],'Alacritty.desktop')
         self.assertEqual(result['apps']['terminal']['workspace'],2)
+        self.assertFalse(result['apps']['terminal']['replace_shortcuts'])
 
     def test_native_chatgpt_and_web_are_separate_and_existing_setting_preserved(self):
         self.add_entry('ChatGPT','chatgpt.desktop','chatgpt')

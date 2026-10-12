@@ -38,7 +38,7 @@ omarchy-plugin-validate .
 
 验证器检查 manifest 和文件结构，不证明 QML 能正常加载，也不证明真实应用身份正确。按 [INSTALL.md](INSTALL.md#10-安装后验收) 完成本机使用验收，再更新 [TEST-REPORT.md](../TEST-REPORT.md)；只记录实际运行结果。
 
-检查源码中没有个人 `apps.toml`、日志、状态备份、令牌或私有路径。明确本工具源码的发布许可，保留 `reference/` 中引用代码的来源和许可证；不要把第三方源码视为无来源自有代码。
+检查源码中没有个人 `apps.toml`、日志、状态备份、令牌或私有路径。本项目原创源码使用 GPL-3.0-only；保留 `reference/` 中引用代码的来源和许可证；不要把第三方源码视为无来源自有代码。
 
 ## 3. 安装当前 GitHub 仓库
 
@@ -54,6 +54,9 @@ bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
 `--backend-only` 补装命令和菜单，不触碰已克隆的插件目录或 Git 元数据。
 
 ## 4. 更新策略
+
+当前版本为 `1.3.0-rc.1`，面板同时校验版本号和 Python 后端源码指纹。禁止用仅改版本字段的方式伪装同步。CI 运行于 PR / main，构建产物保存在 Actions artifacts；创建 RC / Stable Release 仍由维护者在检查验收清单后明确执行，工作流不会自动发布稳定版。
+
 
 发布者同步更新 Python `__version__`、manifest、文档和更新记录，重新验证后发布相应提交或标签。
 
@@ -73,7 +76,7 @@ bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
 
 ```bash
 python3 build_release.py /tmp/install-omarchy-workspaces.sh
-python3 build_source.py /tmp/omarchy-workspaces-plugin-1.2.0.zip
+python3 build_source.py /tmp/omarchy-workspaces-plugin-1.3.0-rc.1.zip
 ```
 
 构建结果包括完整源码与文档的 ZIP，及嵌入载荷校验的单文件安装器。ZIP 内 `SHA256SUMS` 用于校验展开后的文件；验证后一起提供给使用者。

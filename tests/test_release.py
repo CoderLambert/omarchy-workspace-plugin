@@ -29,7 +29,7 @@ class OfflineReleaseTests(unittest.TestCase):
             self.assertEqual((target / 'LARGE-PAYLOAD.md').read_text(), content)
             # A package can extract successfully while still omitting runtime
             # imports. Verify translation and theme assets survive packaging.
-            for relative in ('qml/Strings.js', 'qml/Theme.qml',
+            for relative in ('LICENSE', 'src/omarchy_workspaces/build.py', 'qml/Strings.js', 'qml/Theme.qml',
                              'scripts/ui_fixture.py', 'scripts/verify_qml.py',
                              'tests/ui/tst_workspaces.qml'):
                 self.assertEqual((target / relative).read_bytes(), (package / relative).read_bytes())

@@ -92,7 +92,7 @@ class Manager:
         if expected_revision is not None and expected_revision != self.revision():
             raise Error("配置已被其他操作修改，请刷新后重试；本次修改未写入")
 
-    def apply(self, config, adopt=False, text=None, expected_revision=None):
+    def apply(self, config, adopt=False, text=None, expected_revision=None, expected_bindings=None):
         with lock(self.p.state / "apply.lock"):
             if self.journal.exists():
                 raise Error("存在中断事务，请先执行 omarchy-workspaces recover")
@@ -103,7 +103,12 @@ class Manager:
             self.hypr.reload()  # Baseline must be valid before touching any file.
             backend, main = detect(self.p, config, self.hypr)
             generated = self.p.config / f"hypr/app-workspaces.{ 'lua' if backend == 'lua' else 'conf'}"
-            source, changes = generate(config, backend, self.p.binary, self.hypr.query("binds"))
+            binds = self.hypr.query("binds")
+            if expected_bindings is not None:
+                from .hypr import binding_signature
+                if binding_signature(binds) != expected_bindings:
+                    raise Error("快捷键绑定在预览后发生变化，请重新执行自动预设；本次修改未写入")
+            source, changes = generate(config, backend, self.p.binary, binds)
             planned = {str(generated): (source.encode(), 0o600)}
             current_main = main.read_text()
             clean = strip_block(current_main)
@@ -310,10 +315,16 @@ class Manager:
             matched += [c for c in tmux_windows(config['apps'][app_id], clients) if c.get('address') not in known]
         return matched
 
-    def arrange(self, dry=False, app_id=None):
+    def arrange(self, dry=False, app_id=None, include_special=False):
+        if type(include_special) is not bool:
+            raise Error("包含临时工作区必须是布尔值")
         config = self.applied_config()
         result = []
         for client in self.hypr.query("clients"):
+            location = client.get("workspace") or {}
+            if not include_special and (str(location.get("name", "")).startswith("special:")
+                                        or (isinstance(location.get("id"), int) and location["id"] < 0)):
+                continue
             matched_id = owner(config, client)
             if matched_id and (app_id is None or matched_id == app_id):
                 workspace = config["apps"][matched_id]["workspace"]

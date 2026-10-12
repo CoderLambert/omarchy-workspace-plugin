@@ -2,6 +2,10 @@
 
 // Source-language keys are stable; user app names and paths are never rewritten.
 var english = {
+    "整理时包含临时工作区": "Include special workspaces when arranging",
+    "默认保护 scratchpad 和其他特殊工作区；勾选后保存或整理才会迁移这些窗口。": "Scratchpad and other special workspaces are protected by default. Check this to move their windows when saving or arranging.",
+    "插件与后端版本或构建不同，请先点击“安装 / 更新后端”": "Plugin and backend version or build differ. Install or update the components first.",
+    "包含临时工作区必须是布尔值": "Include special workspaces must be a boolean",
     "放弃未保存的修改？": "Discard unsaved changes?",
     "当前应用的工作区设置尚未保存。继续后将显示另一个应用。": "This app has unsaved workspace settings. Continue to select another app.",
     "正在读取状态": "Reading status",

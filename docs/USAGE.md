@@ -21,11 +21,12 @@ omarchy-workspaces config --advanced
 
 | 功能 | 结果 |
 | --- | --- |
-| 修改目标工作区 | 设置 `1–999`，点击“保存并整理此应用”后立即移动该应用的已有窗口 |
+| 修改目标工作区 | 设置 `1–999`，保存后整理该应用的普通工作区窗口；特殊工作区默认保留 |
 | 修改复用方式 | `focus` 聚焦当前位置；`move` 归位后聚焦 |
 | 打开应用 | 复用已有窗口，或调用原入口 |
 | 保存并整理此应用 | 保存当前工作区及复用设置，只移动该应用的打开窗口 |
-| 整理全部 | 将已登记应用的窗口放回分配位置 |
+| 整理全部 | 将普通工作区中的已登记窗口放回分配位置；默认跳过 special:* |
+| 整理时包含临时工作区 | 明确勾选后才允许保存 / 整理迁移 special:* 中的窗口 |
 | 取消管理一个应用 | 删除其登记，恢复原入口和相关绑定，不关闭应用 |
 | 检查配置 | 展示 `doctor` 报告 |
 | 应用配置 | 按分配文件重新生成规则 |
@@ -74,7 +75,7 @@ omarchy-workspaces add myapp --advanced
 
 ## 5. 预设与快捷键
 
-`setup` 保留已有登记，补齐可识别预设。只有成功登记后才接管相应入口和快捷键。
+`setup` 保留已有应用登记，补齐可识别预设。快捷键冲突先展示原绑定与新命令，默认只跳过冲突键，应用仍登记。交互输入 yes 才逐项授权；非交互运行不接管冲突。授权保存在 `replace_shortcut_keys`，不会把一个键的批准扩展到其他键。旧的手工 `replace_shortcuts` 字段仍兼容；自动预设使用逐键授权。只有成功登记后才接管相应入口和快捷键。
 
 | 应用 | 工作区 | 预设快捷键 |
 | --- | --- | --- |
@@ -104,6 +105,7 @@ omarchy-workspaces set slack --workspace 5
 omarchy-workspaces set slack --existing-window move
 omarchy-workspaces arrange --app slack
 omarchy-workspaces arrange --dry-run
+omarchy-workspaces arrange --include-special --dry-run # 明确包含特殊工作区的计划
 omarchy-workspaces arrange
 
 omarchy-workspaces launch slack
@@ -164,6 +166,7 @@ initial_class = "Slack"
 | `command` | argv 数组，与 `desktop` 只能选一个 |
 | `existing_window` | 应用级 `focus` / `move`，省略时使用 defaults |
 | `shortcuts` | 受管快捷键列表 |
+| `replace_shortcut_keys` | 逐项明确确认过的冲突键；存在时优先于旧的 replace_shortcuts 布尔字段 |
 | `matches` | 候选身份之间为“或”，每个身份内的字段为“且” |
 | `launch_timeout` | 等待窗口秒数，范围 `1–120` |
 | `hypr_config` | defaults 下可选的 Hyprland 主配置绝对路径 |
@@ -247,3 +250,7 @@ python3 scripts/verify_qml.py
 继续使用 Super+S 显示 / 隐藏；普通启动仍按固定工作区分配。
 如果同一应用仅在隐藏的 scratchpad 中，普通入口会将它归回默认工作区。
 工具捕获启动时的上下文；等待新窗口时若隐藏 scratchpad，不会再次展开。
+
+## RC1 前后端同步
+
+状态包含 `buildId` / `backendBuildId`，根据真实 Python 文件计算，不信任安装记录里的自报值。版本或指纹不同，面板阻止修改并提供“更新组件”。安装保留分配、菜单与恢复现场；不自动接纳外部修改、不启动应用、不整理窗口。手工 Git 更新也可运行 `install.sh --backend-only` 同步。

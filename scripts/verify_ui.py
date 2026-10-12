@@ -18,9 +18,9 @@ import shutil
 import sys
 sys.dont_write_bytecode = True
 
-os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
-os.environ.setdefault('QT_QUICK_BACKEND', 'software')
-os.environ.setdefault('QML_DISABLE_DISK_CACHE', '1')
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ['QT_QUICK_BACKEND'] = 'software'
+os.environ['QML_DISABLE_DISK_CACHE'] = '1'
 
 try:
     from PySide6.QtCore import QTimer, QUrl, Qt, qInstallMessageHandler, qVersion
@@ -70,7 +70,7 @@ def evaluate(code):
     return result[0] if isinstance(result, tuple) else result
 
 fixture = {
-    'version':'1.2.0', 'backendVersion':'1.2.0', 'installed':True,
+    'version':'1.3.0-rc.1', 'backendVersion':'1.3.0-rc.1', 'installed':True,
     'needsInstall':False, 'active':True, 'draft':False, 'pending':False,
     'revision':'fixture-revision', 'configPath':'/home/demo/.config/omarchy-workspaces/apps.toml',
     'issues':[],
@@ -131,7 +131,20 @@ def desktop():
     expect('open panel reacts to typography and radius', 'theme.radius === 0 && card.padding === Style.spacing.panelPadding && searchField.font.pixelSize === Style.font.subtitle')
     evaluate('Style.cornerRadius = 8; Style.scale = 1')
     evaluate('Color.useLight()' if args.theme == 'light' else 'Color.useDark()')
-    expect('state selected first app', 'selectedId === "chatgpt" && editorWorkspace === 1 && ready === true')
+    evaluate('setLanguage("en")')
+    expect('English labels update', 'closeButton.text === "Close" && searchField.placeholderText === "Search apps / workspaces"')
+    QTest.qWait(600)
+    evaluate('uiSettings.sync()')
+    if 'language=en' not in (check / 'ui.ini').read_text():
+        raise AssertionError('English preference was not persisted')
+    checks.append('language persisted')
+    evaluate('setLanguage("zh")')
+    expect('Chinese labels restore', 'closeButton.text === "关闭"')
+    expect('special workspaces protected by default', '!includeSpecial && !includeSpecialChoice.checked')
+    evaluate('includeSpecialChoice.toggle(); includeSpecialChoice.toggled(); requestAction({action:"arrange",include_special:includeSpecial})')
+    expect('special workspace opt-in is explicit in request', 'JSON.parse(bridge.command[2]).include_special === true')
+    evaluate('busy=false; bridge.running=false; includeSpecial=false')
+    expect('state selected first app'  , 'selectedId === "chatgpt" && editorWorkspace === 1 && ready === true')
     evaluate('searchField.forceActiveFocus()')
     QTest.keyClick(window, Qt.Key_Tab)
     expect('native Tab traversal leaves search', '!searchField.activeFocus')

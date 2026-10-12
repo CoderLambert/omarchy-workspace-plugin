@@ -96,6 +96,15 @@ Item {
             keyClick(Qt.Key_Escape);verify(q('!confirmation.opened && opened'))
             keyClick(Qt.Key_Escape);verify(q('!opened'))
         }
+        function test_065_special_workspace_opt_in() {
+            q('receiveState({installed:true,needsInstall:false,active:true,revision:"fixture",apps:[{id:"one",name:"应用一",workspace:1,existing_window:"focus"}],issues:[]}); opened=true')
+            verify(q('!includeSpecial && !includeSpecialChoice.checked'))
+            q('send({action:"arrange",include_special:includeSpecial})')
+            verify(q('JSON.parse(bridge.command[2]).include_special === false'))
+            q('busy=false; bridge.running=false; includeSpecialChoice.toggle(); includeSpecialChoice.toggled(); saveSelected()')
+            verify(q('JSON.parse(bridge.command[2]).include_special === true'))
+            q('busy=false; bridge.running=false; includeSpecial=false; loadEditor("one")')
+        }
         function test_07_install_gate() {
             q('receiveState({apps:[],issues:[],installed:false,needsInstall:true,pending:true});send({action:"set",app_id:"one"})')
             verify(q('!busy && messageIsError'))
