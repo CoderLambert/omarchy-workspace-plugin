@@ -72,7 +72,7 @@ omarchy restart shell
 ~/.local/bin/omarchy-workspaces gui
 ```
 
-**Stop if the first command reports local changes**; do not discard them. Both the panel and Python backend must come from the same revision, even if the displayed version number matches. See the [UI design and acceptance notes](docs/UI-SIMPLIFICATION.md) on the preview branch.
+**Stop if the first command reports local changes**; do not discard them. Both the panel and Python backend must come from the same revision, even if the displayed version number matches. See the [UI design and acceptance notes](https://github.com/CoderLambert/omarchy-workspace-plugin/blob/codex/simplify-workspace-ui/docs/UI-SIMPLIFICATION.md) on the preview branch.
 
 ## First-time setup
 
@@ -178,7 +178,7 @@ Window reuse applies to **managed launch entry points**, not every arbitrary way
 ## Documentation
 
 - [Installation and removal](docs/INSTALL.md) · [Panel, CLI and configuration](docs/USAGE.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) (detailed guides currently in Chinese)
-- [UI redesign and testing](docs/UI-SIMPLIFICATION.md) (preview branch)
+- [UI redesign and testing](https://github.com/CoderLambert/omarchy-workspace-plugin/blob/codex/simplify-workspace-ui/docs/UI-SIMPLIFICATION.md) (preview branch)
 - [Release checklist](docs/RELEASE-CHECKLIST.md) · [Changelog](CHANGELOG.md)
 
 **License:** [GPL-3.0-only](LICENSE). Referenced Omarchy code retains its original license; see [third-party sources](reference/SOURCES.md).
