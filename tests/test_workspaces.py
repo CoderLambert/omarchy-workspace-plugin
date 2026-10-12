@@ -29,6 +29,7 @@ def client(address="0x1", cls="Slack", workspace=4, history=0):
 class FakeHypr:
     def __init__(self):
         self.clients = []
+        self.monitors = []
         self.binds = []
         self.focused = []
         self.moved = []
@@ -37,7 +38,7 @@ class FakeHypr:
         self.original_binds = []
 
     def query(self, key):
-        return {"version": {"version": "0.55.0"}, "binds": self.binds, "clients": self.clients}[key]
+        return {"version": {"version": "0.55.0"}, "binds": self.binds, "clients": self.clients, "monitors": self.monitors}[key]
 
     def call(self, *args):
         return ""
@@ -63,6 +64,8 @@ class FakeHypr:
                     description = re.search(r'description = ("(?:\\.|[^"\\])*")', line)
                     mask, _ = key_identity(combo)
                     self.binds.append({'combo':combo, 'modmask':mask, 'key':combo.split(' + ')[-1], 'arg':'42', 'dispatcher':'__lua', 'description':json.loads(description.group(1)), 'test_command':json.loads(command.group(1))})
+
+    visible_scratchpad = Hypr.visible_scratchpad
 
     def focus(self, c):
         self.focused.append(c["address"])
@@ -274,6 +277,53 @@ class LaunchTests(Environment):
         self.h.clients = [client(workspace=7)]
         self.m.launch('chat')
         self.assertEqual(self.h.moved, [('0x1', 4)])
+
+    def show_scratchpad(self):
+        self.h.monitors = [{"focused": True, "specialWorkspace": {"id": -99, "name": "special:scratchpad"}}]
+
+    def test_scratchpad_reuses_existing_app_without_normal_assignment(self):
+        self.m.apply(cfg())
+        self.show_scratchpad()
+        self.h.clients = [client(workspace=4)]
+        self.m.launch("slack")
+        self.assertEqual(self.h.moved, [("0x1", "special:scratchpad")])
+
+    def test_scratchpad_prefers_its_existing_window(self):
+        self.m.apply(cfg())
+        self.show_scratchpad()
+        special = client("0x2", history=1)
+        special["workspace"] = {"id": -99, "name": "special:scratchpad"}
+        self.h.clients = [client(history=0), special]
+        self.m.launch("slack")
+        self.assertEqual(self.h.focused, ["0x2"])
+        self.assertFalse(self.h.moved)
+
+    def test_scratchpad_first_launch_and_hide_during_startup(self):
+        self.m.apply(cfg())
+        self.show_scratchpad()
+        def launch(app, extra=()):
+            self.h.clients = [client()]
+            self.h.monitors = []
+            process = subprocess.Popen(["true"])
+            process.wait()
+            return process
+        with patch.object(self.m.desktops, "launch", side_effect=launch):
+            self.m.launch("slack")
+        self.assertEqual(self.h.moved, [("0x1", "special:scratchpad")])
+        self.assertFalse(self.h.focused)
+
+    def test_normal_launch_returns_scratchpad_app_to_assigned_workspace(self):
+        self.m.apply(cfg())
+        special = client()
+        special["workspace"] = {"id": -99, "name": "special:scratchpad"}
+        self.h.clients = [special]
+        self.m.launch("slack")
+        self.assertEqual(self.h.moved, [("0x1", 4)])
+
+    def test_generated_assignment_rules_exclude_special_workspaces(self):
+        for backend in ("lua", "conf", "v2"):
+            text, _ = generate(cfg(), backend, "/bin/ows", [])
+            self.assertIn("s[false]", text)
 
     def test_first_launch_waits_for_window_and_routes(self):
         self.m.apply(cfg())

@@ -118,7 +118,7 @@ CLI `set --workspace` 修改默认位置，当前窗口保持原位；立即移�
 快捷键设置：
 
 ```bash
-omarchy-workspaces set slack --shortcut 'SUPER + S' --replace-shortcut
+omarchy-workspaces set slack --shortcut 'SUPER + CTRL + S' --replace-shortcut
 omarchy-workspaces set slack --clear-shortcuts
 ```
 
@@ -203,3 +203,47 @@ omarchy-launch-tui --app-id=org.omarchy-workspaces.tmux tmux new-session -A -s W
 | `apply --adopt` | 核对后接纳外部改动，更新恢复基线 |
 
 `--adopt` 不是忽略错误开关。安装器和普通保存不会自动执行它，处理顺序见[故障排查](TROUBLESHOOTING.md)。
+
+## 跟随 Omarchy 主题的面板
+
+工作区管理面板使用 Omarchy Shell 的 `qs.Commons`：背景、文字、遮罩来自
+`Color.menu`，强调色来自 `Color.accent`，错误提示来自 `Color.urgent`。
+面板外框使用官方 `BorderSurface`，支持主题的渐变及各边宽度。字体、
+字号、间距和圆角使用 `Style`；按钮的悬停、选中及焦点填充沿用共享状态
+规则。更换主题后，已打开的面板也通过绑定更新，无需单独配置插件配色。
+
+宽屏保留左侧可搜索的应用列表和右侧设置；窄屏自动改为纵向，内容可
+滚动。选中应用同时显示强调色侧条和工作区编号；键盘焦点另有边框。
+保存、启动和取消管理放在应用设置附近，全局操作保留独立位置。
+
+开发验证（需 Qt 6 QtTest / qmltestrunner；Qt 适配器不改变实际桌面主题、不执行后端操作）：
+
+```bash
+python3 scripts/verify_qml.py
+# 可选 PySide6 适配器：python scripts/verify_ui.py --theme dark
+```
+
+测试包含打开状态下切换深浅调色板、字号和圆角，宽/窄布局、搜索、
+键盘操作和确认对话框。实际桌面运行仍需 Omarchy Shell 的 `qs.Commons`
+与 `qs.Ui`。旧宿主的 QML 缓存若保留旧样式，可执行 `omarchy restart shell`
+后重新打开面板；该操作不重启应用或 tmux。
+
+## 中文 / English
+
+面板右上角的 `中文 / English` 按钮立即切换界面语言，默认中文。
+按钮、表单、说明、确认对话框和常见后端结果都支持两种语言。
+操作执行中或确认对话框打开时，语言开关暂时禁用，避免中途混用语言。
+应用名称、用户配置、快捷键与路径保留原始文字。
+
+选择保存到 `~/.config/omarchy-workspaces/ui.ini` 的 `[ui] language`，
+值为 `zh` 或 `en`；无效值按中文显示。退出面板或重启 Shell 后仍保留。
+语言偏好是独立的公开配置；可由使用者的 dotfiles 工具选择同步。切换语言不修改工作区
+规则或启动应用。高级设置打开的终端 CLI，以及未匹配的原始诊断日志，
+保留程序输出语言，不自动翻译用户数据。
+
+## Scratchpad 临时工作区
+
+按 Super+S 显示 scratchpad 后启动受管应用，它会留在 scratchpad，
+继续使用 Super+S 显示 / 隐藏；普通启动仍按固定工作区分配。
+如果同一应用仅在隐藏的 scratchpad 中，普通入口会将它归回默认工作区。
+工具捕获启动时的上下文；等待新窗口时若隐藏 scratchpad，不会再次展开。

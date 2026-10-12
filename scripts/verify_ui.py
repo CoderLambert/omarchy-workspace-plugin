@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import shutil
 import sys
+sys.dont_write_bytecode = True
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 os.environ.setdefault('QT_QUICK_BACKEND', 'software')
@@ -33,6 +34,7 @@ except ImportError:
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--output', type=Path, help='QA output directory; defaults to a new temporary directory')
+parser.add_argument('--theme', choices=['dark', 'light'], default='dark', help='Initial fixture palette; both palettes are tested live')
 parser.add_argument('--font', type=Path, help='Optional local CJK font for readable screenshots')
 args = parser.parse_args()
 source = Path(__file__).resolve().parents[1]
@@ -40,57 +42,8 @@ check = args.output.resolve() if args.output else Path(tempfile.mkdtemp(prefix='
 # Keep fixture/adaptor writes outside both source and installed plugin folders.
 if check == source or source in check.parents:
     parser.error('--output must be outside the plugin/source directory')
-(check / 'stubs').mkdir(parents=True, exist_ok=True)
-shutil.copytree(source / 'qml', check / 'qml', dirs_exist_ok=True)
-
-# The source UI remains unchanged except the real host's window/process
-# adapters. This verifies Qt Quick construction and interaction, not Wayland
-# compositor behavior or Quickshell's runtime module implementation.
-qml = (source / 'Panel.qml').read_text()
-qml = qml.replace('import Quickshell\n', 'import "stubs"\n')
-qml = qml.replace('import Quickshell.Io\n', '')
-qml = qml.replace('import Quickshell.Wayland\n', '')
-qml = re.sub(r'^\s*(?:exclusionMode:|WlrLayershell\.).*$', '', qml, flags=re.MULTILINE)
-(check / 'Panel.qml').write_text(qml)
-(check / 'stubs' / 'PanelWindow.qml').write_text('''
-import QtQuick
-import QtQuick.Window
-Window {
-    width: 1100
-    height: 850
-    transientParent: null
-    readonly property bool backingWindowVisible: visible
-    property PanelAnchors anchors: PanelAnchors {}
-}
-''')
-(check / 'stubs' / 'PanelAnchors.qml').write_text('''
-import QtQuick
-QtObject {
-    property bool top: false
-    property bool bottom: false
-    property bool left: false
-    property bool right: false
-}
-''')
-(check / 'stubs' / 'Process.qml').write_text('''
-import QtQuick
-QtObject {
-    property var environment: ({})
-    property var command: []
-    property bool running: false
-    property QtObject stdout: null
-    property QtObject stderr: null
-    signal started()
-    signal exited(int exitCode, int exitStatus)
-}
-''')
-(check / 'stubs' / 'StdioCollector.qml').write_text('''
-import QtQuick
-QtObject {
-    property string text: ""
-    signal streamFinished()
-}
-''')
+from ui_fixture import prepare_ui_fixture
+prepare_ui_fixture(source, check)
 
 messages = []
 def log(kind, context, message):
@@ -103,6 +56,7 @@ if args.font:
     if font_id >= 0:
         app.setFont(QFont(QFontDatabase.applicationFontFamilies(font_id)[0], 10))
 engine = QQmlApplicationEngine()
+engine.addImportPath(str(check))
 engine.load(QUrl.fromLocalFile(str(check / 'Panel.qml')))
 if not engine.rootObjects():
     raise SystemExit('QML construction failed')
@@ -133,6 +87,7 @@ fixture = {
 }
 evaluate('receiveState(' + json.dumps(fixture, ensure_ascii=False) + ')')
 evaluate('opened = true; showMessage("配置已生效，当前管理 8 个应用。", false)')
+evaluate('Color.useLight()' if args.theme == 'light' else 'Color.useDark()')
 checks=[]
 failed = []
 def report():
@@ -165,6 +120,17 @@ def desktop():
     windows = app.allWindows()
     window = next(w for w in windows if w.width() >= 1000)
     window.grabWindow().save(str(check / 'desktop.png'))
+    expect('theme surface and text follow shell roles', 'paper === Color.menu.background && ink === Color.menu.text && accent === Color.accent && danger === Color.urgent')
+    expect('theme corner radius follows shell', 'theme.radius === Style.cornerRadius')
+    evaluate('Color.useLight()' if args.theme == 'dark' else 'Color.useDark()')
+    app.processEvents()
+    expect('open panel reacts to palette change', 'paper === Color.menu.background && ink === Color.menu.text && theme.border === Color.menu.border')
+    window.grabWindow().save(str(check / 'alternate-theme.png'))
+    evaluate('Style.cornerRadius = 0; Style.scale = 1.25')
+    app.processEvents()
+    expect('open panel reacts to typography and radius', 'theme.radius === 0 && card.padding === Style.spacing.panelPadding && searchField.font.pixelSize === Style.font.subtitle')
+    evaluate('Style.cornerRadius = 8; Style.scale = 1')
+    evaluate('Color.useLight()' if args.theme == 'light' else 'Color.useDark()')
     expect('state selected first app', 'selectedId === "chatgpt" && editorWorkspace === 1 && ready === true')
     evaluate('searchField.forceActiveFocus()')
     QTest.keyClick(window, Qt.Key_Tab)

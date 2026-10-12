@@ -15,7 +15,7 @@ from .core import Error, Paths, atomic, lock
 from .desktop import exec_line
 from .manager import restore, snapshot
 from .menu import locations, register as register_menu
-from .plugin import LAUNCHER_MARKER, PLUGIN_ID, directory, refresh_plugin
+from .plugin import LAUNCHER_MARKER, PLUGIN_ID, directory, refresh_plugin, overlay_launcher
 
 
 def payload_files(root):
@@ -24,7 +24,7 @@ def payload_files(root):
     for pattern in ("*.md", "build_*.py", "manifest.json", "Panel.qml", "install.sh", "uninstall.sh"):
         files.extend(root.glob(pattern))
     for folder, pattern in (("src", "*.py"), ("scripts", "*.py"), ("tests", "*.py"),
-                            ("qml", "*.qml"), ("docs", "*.md"), ("examples", "*.toml"),
+                            ("qml", "*.qml"), ("qml", "*.js"), ("tests", "*.qml"), ("docs", "*.md"), ("examples", "*.toml"),
                             ("reference", "*")):
         files.extend((root / folder).rglob(pattern))
     result = []
@@ -91,7 +91,10 @@ def install(root, *, cli_only=False, backend_only=False):
             # transaction target untouched so a missing/old backend can be
             # repaired before its interrupted configuration is recovered.
             warnings.append("发现中断的配置事务，已原样保留。安装后请先执行 omarchy-workspaces recover，再应用配置。")
+        preserve_launcher = overlay_launcher(paths.binary)
         for path, marker in ((paths.binary, LAUNCHER_MARKER), (desktop, "X-Omarchy-Workspaces=true")):
+            if path == paths.binary and preserve_launcher:
+                continue
             if path.is_symlink() or (path.exists() and (not path.is_file() or marker not in path.read_text())):
                 raise Error(f"已有同名非受管文件或符号链接，停止覆盖：{path}")
         check_target(runtime)
@@ -151,7 +154,8 @@ def install(root, *, cli_only=False, backend_only=False):
                 swap(plugin, staged_plugin, plugin_work / "old-plugin")
             code = "import sys; sys.dont_write_bytecode=True; sys.path.insert(0, " + repr(str(runtime)) + "); from omarchy_workspaces.cli import main; sys.exit(main())"
             launcher = "#!/bin/sh\n# " + LAUNCHER_MARKER + "\nexec python3 -B -c " + shlex.quote(code) + ' "$@"\n'
-            atomic(paths.binary, launcher.encode(), 0o755)
+            if not preserve_launcher:
+                atomic(paths.binary, launcher.encode(), 0o755)
             entry = ("[Desktop Entry]\nType=Application\nName=工作区配置\nName[en]=Workspace Settings\n"
                      "Comment=原生工作区面板、应用分配与窗口复用\nIcon=preferences-desktop\nTerminal=false\n"
                      "X-Omarchy-Workspaces=true\nCategories=Settings;\nExec=" + exec_line([paths.binary, "gui"]) + "\n")

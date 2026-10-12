@@ -26,6 +26,7 @@ Git 仓库根目录必须直接包含：
 
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests -v
+python3 scripts/verify_qml.py
 bash -n install.sh
 ```
 

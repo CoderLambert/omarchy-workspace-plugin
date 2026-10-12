@@ -9,6 +9,15 @@ from .core import Error
 PLUGIN_ID = "lambert.workspaces"
 LAUNCHER_MARKER = "Omarchy Workspaces managed launcher"
 
+# Exact portable launcher deployed by the personal Chezmoi overlay.
+OVERLAY_LAUNCHER = '#!/bin/sh\n# managed-by: omarchy-overlay-dotfiles\nexec python3 -B -c \'import sys; from pathlib import Path; sys.path.insert(0, str(Path.home()/".local/share/omarchy-workspaces")); from omarchy_workspaces.cli import main; sys.exit(main())\' "$@"\n'
+
+
+def overlay_launcher(path):
+    """Recognize only the audited regular launcher; never follow symlinks."""
+    return not path.is_symlink() and path.is_file() and path.read_text() == OVERLAY_LAUNCHER
+
+
 
 def directory(paths):
     # Omarchy v4.0.4 PluginRegistry and plugin CLI use HOME, not XDG_CONFIG_HOME.
@@ -19,7 +28,8 @@ def backend_version(paths):
     import re
     init = paths.data / "omarchy-workspaces/omarchy_workspaces/__init__.py"
     try:
-        if LAUNCHER_MARKER not in paths.binary.read_text():
+        if paths.binary.is_symlink() or (LAUNCHER_MARKER not in paths.binary.read_text()
+                                         and not overlay_launcher(paths.binary)):
             return ""
         found = re.search(r'__version__\s*=\s*[\'\"]([^\'\"]+)[\'\"]', init.read_text())
         return found.group(1) if found else ""

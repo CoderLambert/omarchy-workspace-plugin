@@ -15,7 +15,17 @@
 
 安装器检查必要依赖，不下载系统包。缺少 `gtk-launch` 时按提示安装 `gtk3`；缺少 Omarchy 专用命令时先确认当前是目标桌面环境。
 
-## 2. 安装完整插件包
+## 2. 快速安装与完整插件包
+
+推荐 Git 安装：
+
+```bash
+omarchy plugin add https://github.com/CoderLambert/omarchy-workspace-plugin.git --enable
+bash ~/.config/omarchy/plugins/lambert.workspaces/install.sh --backend-only
+~/.local/bin/omarchy-workspaces gui
+```
+
+也可下载仓库 ZIP 后在根目录运行 `bash install.sh`；以下为离线构建包的安装方式。
 
 ```bash
 unzip ~/Downloads/omarchy-workspaces-plugin-1.2.0.zip -d ~/Downloads/omarchy-workspaces-1.2.0
@@ -147,6 +157,7 @@ GitHub 仓库的 **Code → Download ZIP** 也可用于本地安装；解压后�
 | 原生插件 | `~/.config/omarchy/plugins/lambert.workspaces/` |
 | CLI | `~/.local/bin/omarchy-workspaces` |
 | Python 后端及安装记录 | `~/.local/share/omarchy-workspaces/` |
+| 面板语言 | `~/.config/omarchy-workspaces/ui.ini`（`zh` / `en`） |
 | 应用分配 | `~/.config/omarchy-workspaces/apps.toml` |
 | 生效规则恢复记录及日志 | `~/.local/state/omarchy-workspaces/` |
 | 系统菜单扩展 | `~/.config/omarchy/extensions/omarchy-menu.jsonc` |
@@ -181,6 +192,7 @@ GitHub 仓库的 **Code → Download ZIP** 也可用于本地安装；解压后�
 3. 选一个已登记应用，从其他工作区再次打开，聚焦原窗口。
 4. 完全关闭它的窗口，连续点击受管入口，检查没有重复拉起。
 5. 手动移开窗口，验证 `focus` 保留位置；单应用“整理”只移动它。
-6. 运行 `omarchy-workspaces doctor`，检查报告及 `hyprctl configerrors`。
+6. 切换中文 / English 后重新打开面板，确认语言保留；显示 scratchpad 后启动应用，确认可用 Super+S 隐藏 / 显示。
+7. 运行 `omarchy-workspaces doctor`，检查报告及 `hyprctl configerrors`。
 
 本机结果代表真实窗口身份和桌面行为；测试桩不能替代这些检查。

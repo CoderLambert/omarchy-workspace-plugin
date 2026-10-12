@@ -28,6 +28,7 @@ if tool == 'hyprctl':
         if args[1] == 'version': print(json.dumps({'version':'0.55.0'}))
         elif args[1] == 'binds': print(json.dumps(data.get('binds',[])))
         elif args[1] == 'clients': print(json.dumps(data['clients']))
+        elif args[1] == 'monitors': print(json.dumps(data.get('monitors', [])))
     elif args[:1] == ['reload']:
         data['binds'] = list(data.get('original_binds',[]))
         generated = Path(os.environ['XDG_CONFIG_HOME']) / 'hypr/app-workspaces.lua'

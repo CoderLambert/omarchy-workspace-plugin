@@ -78,6 +78,26 @@ class NativePluginTests(unittest.TestCase):
         self.assertNotIn('tui_launches', d)
         self.assertEqual(len(list(self.plugin.rglob('__pycache__'))), 0)
 
+    def test_overlay_launcher_is_recognized_and_preserved_on_repeated_install(self):
+        from omarchy_workspaces.plugin import OVERLAY_LAUNCHER
+        self.binary.write_text(OVERLAY_LAUNCHER)
+        self.binary.chmod(0o755)
+        before = self.config.read_bytes()
+        state = self.bridge({'action': 'status'})['state']
+        self.assertTrue(state['installed'])
+        self.assertFalse(state['needsInstall'])
+        for _ in range(2):
+            self.install('--backend-only', source=self.package)
+            self.assertEqual(self.binary.read_text(), OVERLAY_LAUNCHER)
+            self.assertEqual(self.config.read_bytes(), before)
+
+    def test_overlay_marker_does_not_authorize_unknown_launcher(self):
+        self.binary.write_text('#!/bin/sh\n# managed-by: omarchy-overlay-dotfiles\nexit 0\n')
+        before = self.binary.read_bytes()
+        result = self.install('--backend-only', success=False)
+        self.assertIn('停止覆盖', result.stderr)
+        self.assertEqual(self.binary.read_bytes(), before)
+
     def test_bridge_save_moves_only_selected_app_and_refuses_stale_edit(self):
         self.c['apps']['other'] = {'name': 'Other', 'workspace': 2, 'command': ['other'],
                                    'matches': [{'initial_class': 'Other'}], 'shortcuts': []}

@@ -1,34 +1,36 @@
 import QtQuick
 import QtQuick.Controls
+import qs.Commons
 
 RadioButton {
     id: control
 
+    Theme { id: theme }
     property string description: ""
     focusPolicy: Qt.StrongFocus
     hoverEnabled: true
-    padding: 10
-    leftPadding: 40
-    implicitHeight: Math.max(64, contentItem.implicitHeight + topPadding + bottomPadding)
+    padding: Style.space(10)
+    leftPadding: Style.space(40)
+    implicitHeight: Math.max(Style.space(64), contentItem.implicitHeight + topPadding + bottomPadding)
     Accessible.name: text
     Accessible.description: description
 
     indicator: Rectangle {
-        x: 12
-        y: 15
-        width: 18
-        height: 18
+        x: Style.space(12)
+        y: Style.space(15)
+        width: Style.space(18)
+        height: Style.space(18)
         radius: 9
-        color: "#fffdf5"
-        border.width: 2
-        border.color: control.enabled ? "#32674c" : "#9aa99b"
+        color: theme.paper
+        border.width: Style.space(2)
+        border.color: control.enabled ? theme.accent : theme.muted
         Rectangle {
-            width: 8
-            height: 8
+            width: Style.space(8)
+            height: Style.space(8)
             radius: 4
             anchors.centerIn: parent
             visible: control.checked
-            color: control.enabled ? "#32674c" : "#9aa99b"
+            color: control.enabled ? theme.accent : theme.muted
         }
     }
 
@@ -38,25 +40,27 @@ RadioButton {
             width: parent.width
             text: control.text
             textFormat: Text.PlainText
-            font.pixelSize: 14
+            font.family: theme.family
+            font.pixelSize: Style.font.title
             font.weight: Font.DemiBold
-            color: control.enabled ? "#263e30" : "#7d8c80"
+            color: control.enabled ? theme.ink : theme.muted
             wrapMode: Text.WordWrap
         }
         Text {
             width: parent.width
             text: control.description
             textFormat: Text.PlainText
-            font.pixelSize: 12
-            color: "#5e7364"
+            font.family: theme.family
+            font.pixelSize: Style.font.body
+            color: theme.muted
             wrapMode: Text.WordWrap
         }
     }
 
     background: Rectangle {
-        radius: 10
-        color: control.checked ? "#e4eee0" : control.hovered ? "#f0f4e9" : "#fffdf5"
+        radius: theme.radius
+        color: control.checked ? theme.selected : control.hovered ? theme.hover : theme.paper
         border.width: control.activeFocus ? 2 : 1
-        border.color: control.checked || control.activeFocus ? "#32674c" : "#d7dfd0"
+        border.color: control.checked || control.activeFocus ? theme.accent : theme.line
     }
 }

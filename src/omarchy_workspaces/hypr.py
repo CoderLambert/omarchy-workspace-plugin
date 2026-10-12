@@ -43,6 +43,16 @@ class Hypr:
         address = checked_address(client)
         self.dispatch(f"hl.dsp.window.move({{ window = {quote('address:' + address)}, workspace = {quote(str(workspace))}, follow = false }})", "movetoworkspacesilent", f"{workspace},address:{address}")
 
+    def visible_scratchpad(self):
+        monitors = self.query("monitors")
+        focused = next((m for m in monitors if m.get("focused")), None)
+        if not focused:
+            return None
+        special = focused.get("specialWorkspace") or {}
+        if special.get("name") == "special:scratchpad" and special.get("id", 0) < 0:
+            return "special:scratchpad"
+        return None
+
     def reload(self):
         result = self.call("reload")
         if result.lower() not in ("ok", ""):
@@ -96,16 +106,16 @@ def generate(config, backend, binary, binds):
     entries = sorted([(len(m), app_id, m, app["workspace"]) for app_id, app in config["apps"].items() for m in app["matches"]], key=lambda x: (x[0], x[1]))
     for i, (_, app_id, match, workspace) in enumerate(entries):
         if backend == "lua":
-            props = ", ".join(f"{k} = {quote(literal(v))}" for k, v in match.items())
+            props = ", ".join(f"{k} = {quote(literal(v))}" for k, v in match.items()) + ', workspace = "s[false]"'
             lines.append(f"hl.window_rule({{ name = {quote(f'ows-{app_id}-{i}')}, match = {{ {props} }}, workspace = {quote(str(workspace) + ' silent')} }})")
         elif backend == "conf":
             lines.extend(["windowrule {", f"  name = ows-{app_id}-{i}"])
             lines.extend(f"  match:{k} = {conf_literal(v)}" for k, v in match.items())
-            lines.extend([f"  workspace = {workspace} silent", "}"])
+            lines.extend(["  match:workspace = s[false]", f"  workspace = {workspace} silent", "}"])
         else:
             old = {"class": "class", "initial_class": "initialclass", "initial_title": "initialtitle"}
             props = ",".join(f"{old[k]}:{conf_literal(v)}" for k, v in match.items())
-            lines.append(f"windowrulev2 = workspace {workspace} silent,{props}")
+            lines.append(f"windowrulev2 = workspace {workspace} silent,{props},onworkspace:s[false]")
     replacements = []
     for app_id, app in config["apps"].items():
         for key in app.get("shortcuts", []):

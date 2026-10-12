@@ -245,6 +245,7 @@ class Manager:
         if app_id not in config["apps"]:
             raise Error(f"应用未登记：{app_id}")
         app = config["apps"][app_id]
+        scratchpad = self.hypr.visible_scratchpad()
         if new or extra:
             self.desktops.launch(app, extra)
             return "已转交原始入口"
@@ -255,10 +256,14 @@ class Manager:
                 return "应用正在启动"
             pending = self.p.runtime / f"{key}.json"
             clients = self.matching_clients(config, app_id)
-            client = recent(clients)
+            preferred = [c for c in clients if (c.get("workspace", {}).get("name") == "special:scratchpad") == bool(scratchpad)]
+            client = recent(preferred or clients)
             if client:
                 pending.unlink(missing_ok=True)
-                if app.get("existing_window", config["defaults"].get("existing_window", "focus")) == "move":
+                if scratchpad:
+                    if client.get("workspace", {}).get("name") != scratchpad:
+                        self.hypr.move(client, scratchpad)
+                elif client.get("workspace", {}).get("name") == "special:scratchpad" or app.get("existing_window", config["defaults"].get("existing_window", "focus")) == "move":
                     self.hypr.move(client, app["workspace"])
                 self.hypr.focus(client)
                 return "已聚焦已有窗口"
@@ -280,8 +285,10 @@ class Manager:
                     client = recent(clients)
                     if client:
                         # Correct the first observed window too; DBus/singleton relaunch may ignore PID rules.
-                        self.hypr.move(client, app["workspace"])
-                        self.hypr.focus(client)
+                        self.hypr.move(client, scratchpad or app["workspace"])
+                        # If the user hid scratchpad while startup was pending, keep it hidden.
+                        if not scratchpad or self.hypr.visible_scratchpad() == scratchpad:
+                            self.hypr.focus(client)
                         pending.unlink(missing_ok=True)
                         return "已启动并聚焦"
                     code = process.poll()

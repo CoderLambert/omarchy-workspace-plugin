@@ -27,6 +27,12 @@ class OfflineReleaseTests(unittest.TestCase):
                                     capture_output=True, text=True, timeout=20)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual((target / 'LARGE-PAYLOAD.md').read_text(), content)
+            # A package can extract successfully while still omitting runtime
+            # imports. Verify translation and theme assets survive packaging.
+            for relative in ('qml/Strings.js', 'qml/Theme.qml',
+                             'scripts/ui_fixture.py', 'scripts/verify_qml.py',
+                             'tests/ui/tst_workspaces.qml'):
+                self.assertEqual((target / relative).read_bytes(), (package / relative).read_bytes())
             # Corrupt one payload byte; refuse it before extracting any files.
             header, payload = installer.read_text().split('\n# __OWS_WORKSPACES_PAYLOAD__\n', 1)
             payload = ('A' if payload[0] != 'A' else 'B') + payload[1:]
