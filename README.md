@@ -62,7 +62,7 @@ bash install.sh
 
 **前后端一致性：**面板比较版本与后端 Python 源码指纹；即使版本字符串相同、代码不同也会阻止修改。点击“更新组件”会同步后端并保留应用分配。
 
-**快捷键：**自动预设先展示冲突的原绑定和新命令。默认仅跳过冲突快捷键，仍登记应用；每个冲突需明确输入 `yes` 才接管。非交互运行默认跳过冲突项。确认后若绑定变化，本次应用中止并要求重新预览。
+**快捷键：**自动预设默认不添加插件快捷键，保留 Omarchy 的系统绑定。工作区分配和受管菜单的窗口复用仍可使用。需要用快捷键打开或复用应用时，运行 `omarchy-workspaces setup --with-shortcuts`；每个冲突都会展示原绑定与新命令，明确输入 `yes` 才接管，默认跳过。已有个人快捷键设置继续保留。
 
 **首次使用：**打开 **Omarchy 系统菜单 → 工作区配置**，点“自动预设…”；或先打开某个应用，用“添加应用…”单独登记。自动预设会补齐可识别的应用并整理已登记窗口，部分应用可能通过探测启动确认身份，身份不确定的应用会跳过。
 
@@ -100,7 +100,7 @@ bash install.sh
 
 ```bash
 omarchy-workspaces gui                         # 打开面板
-omarchy-workspaces setup                       # 首次识别预设并整理
+omarchy-workspaces setup                       # 识别应用并整理，不添加预设快捷键
 omarchy-workspaces add Obsidian --workspace 2 # 登记一个已经打开的应用
 omarchy-workspaces list                        # 查看本机应用 ID
 omarchy-workspaces doctor                      # 检查配置和规则

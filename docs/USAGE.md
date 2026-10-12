@@ -75,9 +75,13 @@ omarchy-workspaces add myapp --advanced
 
 ## 5. 预设与快捷键
 
-`setup` 保留已有应用登记，补齐可识别预设。快捷键冲突先展示原绑定与新命令，默认只跳过冲突键，应用仍登记。交互输入 yes 才逐项授权；非交互运行不接管冲突。授权保存在 `replace_shortcut_keys`，不会把一个键的批准扩展到其他键。旧的手工 `replace_shortcuts` 字段仍兼容；自动预设使用逐键授权。只有成功登记后才接管相应入口和快捷键。
+`setup` 保留已有应用登记和个人快捷键，仅补齐应用工作区分配；默认不添加预设快捷键。下表的键是可选的应用启动/复用入口，不是工作区切换键。它们与 Omarchy 系统启动键重合，因此新机器无需启用它们，也无需逐项处理冲突。
 
-| 应用 | 工作区 | 预设快捷键 |
+需要快捷键复用功能时执行 `omarchy-workspaces setup --with-shortcuts`。冲突先展示原绑定与新命令，输入 yes 才逐项授权；默认跳过，非交互运行不接管冲突。授权保存在 `replace_shortcut_keys`，不会把一个键的批准扩展到其他键。旧的手工 `replace_shortcuts` 字段仍兼容。已有用户主动设置的键不会被默认预设清空。
+
+例如原来的 `Super+Return` 调用系统终端启动器；启用插件对应键后改为 `omarchy-workspaces launch terminal`，先查找并复用终端窗口，没有窗口时再启动。不改键时仍可通过受管菜单或面板“打开”使用窗口复用。
+
+| 应用 | 工作区 | 可选快捷键 |
 | --- | --- | --- |
 | ChatGPT App、Grok Bot | 1 | 保留应用入口 |
 | ChatGPT 网页 | 1 | `Ctrl + Shift + A` |

@@ -355,12 +355,24 @@ def review_setup_shortcuts(manager, config, decide=None):
     return config, binding_signature(binds)
 
 
-def setup(manager):
+def setup(manager, with_shortcuts=False):
     revision = manager.revision()
     config = load(manager.p.file) if manager.p.file.exists() else empty_config()
     print("正在自动设置：1 AI · 2 开发 · 3 浏览器 · 4 通信", flush=True)
-    config, statuses = discover(manager, config, PRESETS)
-    config, preview = review_setup_shortcuts(manager, config)
+    presets = PRESETS if with_shortcuts else [(*preset[:4], []) for preset in PRESETS]
+    config, statuses = discover(manager, config, presets)
+    if with_shortcuts:
+        for app_id, _, _, _, keys in PRESETS:
+            app = config["apps"].get(config["aliases"].get(app_id, app_id))
+            if app is not None:
+                combined = {key_identity(key): key for key in app.get("shortcuts", [])}
+                for key in keys:
+                    combined.setdefault(key_identity(key), key)
+                app["shortcuts"] = list(combined.values())
+        config, preview = review_setup_shortcuts(manager, config)
+    else:
+        preview = binding_signature(manager.hypr.query("binds"))
+        print("默认不添加预设快捷键；保留已有绑定。需要时运行 setup --with-shortcuts。")
     changes = manager.apply(config, expected_revision=revision, expected_bindings=preview)
     manager.arrange()
     for name, status in statuses:
@@ -474,8 +486,10 @@ def parser():
     result = argparse.ArgumentParser(description="Omarchy 工作区与应用窗口复用管理")
     result.add_argument("--version", action="version", version=__version__)
     commands = result.add_subparsers(dest="action", required=True)
-    for command in ("setup", "wizard", "list", "doctor", "recover", "windows", "uninstall", "reset", "gui", "repair-menu"):
+    for command in ("wizard", "list", "doctor", "recover", "windows", "uninstall", "reset", "gui", "repair-menu"):
         commands.add_parser(command)
+    sub = commands.add_parser("setup")
+    sub.add_argument("--with-shortcuts", action="store_true", help="启用可选应用启动/复用快捷键，逐项确认冲突")
     sub = commands.add_parser("config")
     sub.add_argument("--advanced", action="store_true")
     sub = commands.add_parser("apply")
@@ -518,7 +532,7 @@ def main(argv=None):
         if args.action == "launch":
             print(manager.launch(args.app_id, args.new, args.args))
         elif args.action == "setup":
-            setup(manager)
+            setup(manager, with_shortcuts=args.with_shortcuts)
         elif args.action == "wizard":
             wizard(manager)
         elif args.action == "config":

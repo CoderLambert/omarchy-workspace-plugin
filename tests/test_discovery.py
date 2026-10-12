@@ -4,7 +4,7 @@ import unittest
 from contextlib import redirect_stdout
 from unittest.mock import patch
 
-from omarchy_workspaces.cli import PRESETS, menu, setup
+from omarchy_workspaces.cli import PRESETS, menu, setup, parser
 from omarchy_workspaces.core import binding_shortcut, empty_config
 from omarchy_workspaces.discover import discover, entry_identity, observed_match, probe, score_entry, web_identity
 from omarchy_workspaces.hypr import generate
@@ -73,6 +73,57 @@ class DiscoveryTests(Environment):
         with patch('omarchy_workspaces.cli.PRESETS',presets),patch('builtins.input',side_effect=AssertionError('Must not prompt')),redirect_stdout(io.StringIO()):
             setup(self.m)
         self.assertEqual(self.h.moved,[('0x1',1)])
+
+    def test_default_setup_preserves_stock_binding_without_conflict_review(self):
+        self.add_entry('Alacritty', 'Alacritty.desktop', 'Alacritty')
+        self.h.clients = [client(cls='Alacritty')]
+        original = {'combo': 'SUPER + Return', 'modmask': 64, 'key': 'Return', 'dispatcher': 'exec', 'arg': 'omarchy-launch-terminal'}
+        self.h.binds = self.h.original_binds = [original]
+        presets = [next(p for p in PRESETS if p[0] == 'terminal')]
+        with patch('omarchy_workspaces.cli.PRESETS', presets), patch('omarchy_workspaces.cli.review_setup_shortcuts', side_effect=AssertionError('Must not review optional keys')), redirect_stdout(io.StringIO()):
+            setup(self.m)
+            setup(self.m)
+        self.assertEqual(self.m.applied_config()['apps']['terminal']['shortcuts'], [])
+        self.assertEqual(self.h.binds, [original])
+
+    def test_opt_in_setup_reviews_stock_binding_and_skips_without_consent(self):
+        self.add_entry('Alacritty', 'Alacritty.desktop', 'Alacritty')
+        self.h.clients = [client(cls='Alacritty')]
+        original = {'combo': 'SUPER + Return', 'modmask': 64, 'key': 'Return', 'dispatcher': 'exec', 'arg': 'omarchy-launch-terminal'}
+        self.h.binds = self.h.original_binds = [original]
+        presets = [next(p for p in PRESETS if p[0] == 'terminal')]
+        output = io.StringIO()
+        with patch('omarchy_workspaces.cli.PRESETS', presets), patch('omarchy_workspaces.cli.sys.stdin.isatty', return_value=False), redirect_stdout(output):
+            setup(self.m, with_shortcuts=True)
+        self.assertIn('omarchy-launch-terminal', output.getvalue())
+        self.assertEqual(self.h.binds, [original])
+        self.assertEqual(self.m.applied_config()['apps']['terminal']['shortcuts'], [])
+
+    def test_opt_in_adds_keys_after_default_setup_without_changing_assignment(self):
+        self.add_entry('Alacritty', 'Alacritty.desktop', 'Alacritty')
+        self.h.clients = [client(cls='Alacritty')]
+        presets = [next(p for p in PRESETS if p[0] == 'terminal')]
+        with patch('omarchy_workspaces.cli.PRESETS', presets), redirect_stdout(io.StringIO()):
+            setup(self.m)
+            setup(self.m, with_shortcuts=True)
+            setup(self.m, with_shortcuts=True)
+        app = self.m.applied_config()['apps']['terminal']
+        self.assertEqual(app['shortcuts'], ['SUPER + Return'])
+        self.assertEqual(app['workspace'], 2)
+
+    def test_default_setup_keeps_existing_custom_keys_and_grants(self):
+        config = cfg()
+        config['apps']['slack'].update(shortcuts=['SUPER + A'], replace_shortcut_keys=['SUPER + A'])
+        self.m.apply(config)
+        with patch('omarchy_workspaces.cli.PRESETS', []), redirect_stdout(io.StringIO()):
+            setup(self.m)
+        app = self.m.applied_config()['apps']['slack']
+        self.assertEqual(app['shortcuts'], ['SUPER + A'])
+        self.assertEqual(app['replace_shortcut_keys'], ['SUPER + A'])
+
+    def test_setup_shortcuts_require_explicit_cli_opt_in(self):
+        self.assertFalse(parser().parse_args(['setup']).with_shortcuts)
+        self.assertTrue(parser().parse_args(['setup', '--with-shortcuts']).with_shortcuts)
 
     def test_simple_menu_changes_workspace_and_moves_window(self):
         self.m.apply(cfg())
